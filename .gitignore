@@ -1,0 +1,11 @@
+# Ignore files with no extension
+*
+!*/
+!*.*
+
+# Ignore built files
+*.pdb
+*.ilk
+*.exe
+*.js
+nimcache
