@@ -40,9 +40,7 @@ for file in files:
     uncompressed = uncompress(compressed)
   assert uncompressed == original, &"Uncompressed != original for {file}"
 
-var
-  reuseCompressed: seq[uint8]
-  reuseUncompressed: seq[uint8]
+var reuseCompressed, reuseUncompressed: seq[uint8]
 for file in files:
   let original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
   compress(original, reuseCompressed)
