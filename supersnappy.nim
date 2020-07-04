@@ -372,9 +372,10 @@ proc compressFragment(
           emitRemainder()
           return
         inputBytes = read64(src[insertTail].unsafeAddr)
-        let prevHash = hash(uint32AtOffset(inputBytes, 0))
+        let
+          prevHash = hash(uint32AtOffset(inputBytes, 0))
+          curHash = hash(uint32AtOffset(inputBytes, 1))
         compressTable[prevHash] = (ip - start - 1).uint16
-        let curHash = hash(uint32AtOffset(inputBytes, 1))
         candidate = start + compressTable[curHash].int
         candidateBytes = read32(src[candidate].unsafeAddr)
         compressTable[curHash] = (ip - start).uint16
