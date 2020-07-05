@@ -46,3 +46,11 @@ for file in files:
   compress(original, reuseCompressed)
   uncompress(reuseCompressed, reuseUncompressed)
   assert reuseUncompressed == original, &"Uncompressed != original for {file}"
+
+for file in files:
+  let
+    original = readFile("tests" / "data" / file)
+    compressed = readFile("tests" / "data" / &"{file}.snappy")
+    uncompressed = uncompress(compressed)
+  assert uncompressed == original,
+    &"Uncompressed != original for {file} (snappy-c output)"
