@@ -259,7 +259,7 @@ func findMatchLength(src: openArray[uint8], s1, s2, limit: int): int =
     else:
       return
 
-func emitCopy64(
+func emitCopy64Max(
   dst: var seq[uint8],
   op: var int,
   offset: int,
@@ -284,14 +284,14 @@ func emitCopy(
 ) =
   var len = len
   while len >= 68:
-    emitCopy64(dst, op, offset, 64)
+    emitCopy64Max(dst, op, offset, 64)
     dec(len, 64)
 
   if len > 64:
-    emitCopy64(dst, op, offset, 60)
+    emitCopy64Max(dst, op, offset, 60)
     dec(len, 60)
 
-  emitCopy64(dst, op, offset, len)
+  emitCopy64Max(dst, op, offset, len)
 
 proc compressFragment(
   dst: var seq[uint8],
