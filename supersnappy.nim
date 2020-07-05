@@ -204,7 +204,6 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
     failUncompress()
 
 func uncompress*(src: openArray[uint8]): seq[uint8] {.inline.} =
-  result = newSeqUninitialized[uint8](0)
   uncompress(src, result)
 
 func emitLiteral(
@@ -314,11 +313,6 @@ proc compressFragment(
 
   zeroMem(compressTable[0].addr, tableSize * sizeof(uint16))
 
-  template doWhile(a, b: untyped) =
-    b
-    while a:
-      b
-
   template hash(v: uint32): uint32 =
     (v * 0x1e35a7bd) shr shift
 
@@ -339,7 +333,7 @@ proc compressFragment(
         skipBytes = 32
         nextIp = ip
         candidate: int
-      doWhile read32(src[ip].unsafeAddr) != read32(src[candidate].unsafeAddr):
+      while true:
         ip = nextIp
         var
           h = nextHash
@@ -353,12 +347,15 @@ proc compressFragment(
         candidate = start + compressTable[h].int
         compressTable[h] = (ip - start).uint16
 
+        if read32(src[ip].unsafeAddr) == read32(src[candidate].unsafeAddr):
+          break
+
       emitLiteral(dst, src, op, nextEmit, ip - nextEmit, true)
 
       var
         inputBytes: uint64
         candidateBytes: uint32
-      doWhile uint32AtOffset(inputBytes, 1) == candidateBytes:
+      while true:
         let
           base = ip
           matched = 4 + findMatchLength(src, candidate + 4, ip + 4, ipEnd)
@@ -379,6 +376,9 @@ proc compressFragment(
         candidate = start + compressTable[curHash].int
         candidateBytes = read32(src[candidate].unsafeAddr)
         compressTable[curHash] = (ip - start).uint16
+
+        if uint32AtOffset(inputBytes, 1) != candidateBytes:
+          break
 
       nextHash = hash(uint32AtOffset(inputBytes, 2))
       inc ip
@@ -412,7 +412,6 @@ proc compress*(src: openArray[uint8], dst: var seq[uint8]) =
   dst.setLen(op)
 
 proc compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
-  result = newSeqUninitialized[uint8](0)
   compress(src, result)
 
 template uncompress*(src: string): string =
@@ -420,11 +419,5 @@ template uncompress*(src: string): string =
 
 template compress*(src: string): string =
   cast[string](compress(cast[seq[uint8]](src)))
-
-# template uncompress*(src: string, dst: var string) =
-#   uncompress(cast[seq[uint8]](src), cast[var seq[uint8]](dst))
-
-# template compress*(src: string, dst: var string) =
-#   compress(cast[seq[uint8]](src), cast[var seq[uint8]](dst))
 
 {.pop.}
