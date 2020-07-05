@@ -42,7 +42,7 @@ const
 type
   SnappyException* = object of ValueError
 
-var compressTable = newSeqUninitialized[uint16](maxCompressTableSize)
+var compressTable {.threadvar.}: seq[uint16]
 
 {.push checks: off.}
 
@@ -388,6 +388,9 @@ proc compressFragment(
 proc compress*(src: openArray[uint8], dst: var seq[uint8]) =
   if src.len > high(uint32).int:
     failCompress()
+
+  if compressTable.len == 0:
+    compressTable.setLen(maxCompressTableSize)
 
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
 
