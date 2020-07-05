@@ -69,9 +69,7 @@ block guzba_supersnappy:
 
 block guzba_supersnappy_reuse:
   echo "https://github.com/guzba/supersnappy [reuse]"
-  var
-    reuseCompress = newSeq[uint8]()
-    reuseUncompress = newSeq[uint8]()
+  var reuseCompress, reuseUncompress: seq[uint8]
   for file in files:
     let
       original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
