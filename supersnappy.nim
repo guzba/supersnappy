@@ -146,24 +146,24 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
     op = 0
   while ip < srcLen:
     if (src[ip] and 0x03) == 0x00: # LITERAL
-        var len = src[ip].int shr 2 + 1
-        inc ip
+      var len = src[ip].int shr 2 + 1
+      inc ip
 
-        if len <= 16 and srcLen > ip + 16 and dstLen > op + 16:
-          copy64(dst[op].addr, src[ip].unsafeAddr)
-          copy64(dst[op + 8].addr, src[ip + 8].unsafeAddr)
-        else:
-          if len >= 61:
-            let bytes = len - 60
-            len = (read32(src[ip].unsafeAddr) and lenWordMask[bytes]).int + 1
-            inc(ip, bytes)
+      if len <= 16 and srcLen > ip + 16 and dstLen > op + 16:
+        copy64(dst[op].addr, src[ip].unsafeAddr)
+        copy64(dst[op + 8].addr, src[ip + 8].unsafeAddr)
+      else:
+        if len >= 61:
+          let bytes = len - 60
+          len = (read32(src[ip].unsafeAddr) and lenWordMask[bytes]).int + 1
+          inc(ip, bytes)
 
-          if len <= 0 or ip + len > srcLen or op + len > dstLen:
-            failUncompress()
-          copyMem(dst[op].addr, src[ip].unsafeAddr, len)
+        if len <= 0 or ip + len > srcLen or op + len > dstLen:
+          failUncompress()
+        copyMem(dst[op].addr, src[ip].unsafeAddr, len)
 
-        inc(ip, len)
-        inc(op, len)
+      inc(ip, len)
+      inc(op, len)
     else: # COPY
       let
         entry = uncompressLookup[src[ip]]
@@ -321,7 +321,7 @@ proc compressFragment(
 
   template emitRemainder() =
     if nextEmit < ipEnd:
-        emitLiteral(dst, src, op, nextEmit, ipEnd - nextEmit, false)
+      emitLiteral(dst, src, op, nextEmit, ipEnd - nextEmit, false)
 
   if len >= 15:
     let ipLimit = start + len - 15
