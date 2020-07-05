@@ -1,4 +1,4 @@
-import strformat
+import os, strformat
 
 include ../supersnappy
 
@@ -35,7 +35,7 @@ const files = [
 
 for file in files:
   let
-    original = readFile(&"tests/data/{file}")
+    original = readFile("tests" / "data" / file)
     compressed = compress(original)
     uncompressed = uncompress(compressed)
   assert uncompressed == original, &"Uncompressed != original for {file}"
