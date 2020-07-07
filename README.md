@@ -6,7 +6,7 @@ Supersnappy works well using Nim's relatively new `--gc:arc` and `--gc:orc` as w
 
 ### Performance
 
-Benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alterantives. Verify the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
+Benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alternatives. Check the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
 
 `nim c --gc:arc -d:release -r .\tests\benchmark.nim ` (1000 compress-uncompress cycles, lower time is better)
 
