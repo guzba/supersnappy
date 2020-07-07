@@ -1,4 +1,4 @@
-# nim c --gc:arc -d:release -r .\tests\chunks.nim
+# To run: nim c --gc:arc -d:release -r .\tests\chunks.nim
 # You may need to install first: nimble install snappy, nimsnappyc
 
 import ../supersnappy, nimsnappyc, os, snappy, std/monotimes, strformat

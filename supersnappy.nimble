@@ -1,5 +1,5 @@
 packageName   = "supersnappy"
-version       = "0.0.0"
+version       = "1.0.0"
 author        = "Ryan Oldenburg"
 description   = "Nim implementation of Google's Snappy compression."
 license       = "MIT"
