@@ -1,6 +1,12 @@
+## Supersnappy
+
 Supersnappy is a pure Nim implementation of [Google's Snappy](https://github.com/google/snappy) compression algorithm. The goal of this library is to be small, straightforward, dependency-free and highly performant.
 
-Tests and benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alterantives. Verify the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
+Supersnappy works well using Nim's relatively new --gc:arc and --gc:orc as well as the standard garbage collector. This library also works using both `nim c` and `nim cpp`, in addition to `--cc:vcc`.
+
+### Performance
+
+Benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alterantives. Verify the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
 
 `nim c --gc:arc -d:release -r .\tests\benchmark.nim `
 
@@ -46,5 +52,8 @@ https://github.com/NimCompression/nimsnappyc
   plrabn12.txt: 2.6987s (compressed to 319097 bytes, 33.78% reduction)
   urls.10K: 2.5136s (compressed to 335387 bytes, 52.23% reduction)
 ```
+
+### Testing
+`nimble test`
 
 This implementation was heavily influenced by [snappy-c](https://github.com/andikleen/snappy-c).
