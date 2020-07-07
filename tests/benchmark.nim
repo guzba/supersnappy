@@ -1,4 +1,5 @@
-## nim c --gc:arc -d:release -r .\tests\benchmark.nim
+# To run: nim c --gc:arc -d:release -r .\tests\benchmark.nim
+# You may need to install first: nimble install snappy, nimsnappyc
 
 import ../supersnappy, nimsnappyc, snappy, std/monotimes, strformat
 
