@@ -1,3 +1,7 @@
+# This implementation has been heavily influenced by snappy-c
+# See the snappy-c repo at https://github.com/andikleen/snappy-c for
+# extensive comments explaining the implementation.
+
 import bitops
 
 const
