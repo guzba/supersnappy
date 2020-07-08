@@ -46,8 +46,6 @@ const
 type
   SnappyException* = object of ValueError
 
-var compressTable {.threadvar.}: seq[uint16]
-
 {.push checks: off.}
 
 func varint(value: uint32): (array[5, uint8], int) =
@@ -297,12 +295,13 @@ func emitCopy(
 
   emitCopy64Max(dst, op, offset, len)
 
-proc compressFragment(
+func compressFragment(
   dst: var seq[uint8],
   src: openArray[uint8],
   op: var int,
   start: int,
-  len: int
+  len: int,
+  compressTable: var seq[uint16]
 ) =
   let ipEnd = start + len
   var
@@ -389,12 +388,11 @@ proc compressFragment(
 
   emitRemainder()
 
-proc compress*(src: openArray[uint8], dst: var seq[uint8]) =
+func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   if src.len > high(uint32).int:
     failCompress()
 
-  if compressTable.len == 0:
-    compressTable.setLen(maxCompressTableSize)
+  var compressTable = newSeqUninitialized[uint16](maxCompressTableSize)
 
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
 
@@ -413,12 +411,12 @@ proc compress*(src: openArray[uint8], dst: var seq[uint8]) =
     if numToRead <= 0:
       failCompress()
 
-    compressFragment(dst, src, op, ip, numToRead)
+    compressFragment(dst, src, op, ip, numToRead, compressTable)
     inc(ip, numToRead)
 
   dst.setLen(op)
 
-proc compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
+func compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
   compress(src, result)
 
 template uncompress*(src: string): string =
