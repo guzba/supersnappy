@@ -65,3 +65,63 @@ urls.10K | 2.5136s
 ### Credits
 
 This implementation was heavily influenced by [snappy-c](https://github.com/andikleen/snappy-c).
+
+# API: supersnappy
+
+```nim
+import supersnappy
+```
+
+## **type** SnappyException
+
+Raised if an operation fails.
+
+```nim
+SnappyException = object of ValueError
+```
+
+## **func** uncompress
+
+Uncompresses src into dst. This resizes dst as needed and starts writing at dst index 0.
+
+```nim
+func uncompress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyException].}
+```
+
+## **func** uncompress
+
+Uncompresses src and returns the uncompressed data seq.
+
+```nim
+func uncompress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyException].}
+```
+
+## **func** compress
+
+Compresses src into dst. This resizes dst as needed and starts writing at dst index 0.
+
+```nim
+func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyException], tags: [].}
+```
+
+## **func** compress
+
+Compresses src and returns the compressed data seq.
+
+```nim
+func compress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyException], tags: [].}
+```
+
+## **template** uncompress
+
+
+```nim
+template uncompress(src: string): string
+```
+
+## **template** compress
+
+
+```nim
+template compress(src: string): string
+```

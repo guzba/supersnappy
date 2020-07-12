@@ -44,7 +44,7 @@ const
   maxCompressTableSize = 1 shl 14
 
 type
-  SnappyException* = object of ValueError
+  SnappyException* = object of ValueError ## Raised if an operation fails.
 
 {.push checks: off.}
 
