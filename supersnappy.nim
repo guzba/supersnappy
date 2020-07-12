@@ -134,6 +134,9 @@ template copy64(dst, src: pointer) =
   cast[ptr uint64](dst)[] = read64(src)
 
 func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
+  ## Uncompresses src into dst. This resizes dst as needed and starts writing
+  ## at dst index 0.
+
   let (uncompressedLen, bytesRead) = varint(src)
   if bytesRead <= 0:
     failUncompress()
@@ -206,6 +209,7 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
     failUncompress()
 
 func uncompress*(src: openArray[uint8]): seq[uint8] {.inline.} =
+  ## Uncompresses src and returns the uncompressed data seq.
   uncompress(src, result)
 
 func emitLiteral(
@@ -389,6 +393,9 @@ func compressFragment(
   emitRemainder()
 
 func compress*(src: openArray[uint8], dst: var seq[uint8]) =
+  ## Compresses src into dst. This resizes dst as needed and starts writing
+  ## at dst index 0.
+
   if src.len > high(uint32).int:
     failCompress()
 
@@ -417,6 +424,7 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   dst.setLen(op)
 
 func compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
+  ## Compresses src and returns the compressed data seq.
   compress(src, result)
 
 template uncompress*(src: string): string =
