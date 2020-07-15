@@ -399,8 +399,6 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   if src.len > high(uint32).int:
     failCompress()
 
-  var compressTable = newSeqUninitialized[uint16](maxCompressTableSize)
-
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
 
   let (bytes, varintBytes) = varint(src.len.uint32)
@@ -410,7 +408,7 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   var
     ip = 0
     op = varintBytes
-
+    compressTable = newSeqUninitialized[uint16](maxCompressTableSize)
   while ip < srcLen:
     let
       fragmentSize = srcLen - ip
