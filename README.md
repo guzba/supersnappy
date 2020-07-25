@@ -10,7 +10,7 @@ Supersnappy works well using Nim's relatively new `--gc:arc` and `--gc:orc` as w
 
 Benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alternatives. Check the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
 
-`nim c --gc:arc -d:release -r .\tests\benchmark.nim ` (1000 compress-uncompress cycles, lower time is better)
+`nim c --gc:arc -d:release -r .\tests\benchmark.nim` (1000 compress-uncompress cycles, lower time is better)
 
 **https://github.com/guzba/supersnappy** results:
 
@@ -32,17 +32,17 @@ https://github.com/jangko/snappy results:
 
 File | Time
 --- | ---:
-alice29.txt | 2.1374s
-asyoulik.txt | 1.8228s
-fireworks.jpg | 0.0333s
-geo.protodata | 0.6090s
-html | 0.6099s
-html_x_4 | 2.4634s
-kppkn.gtb | 1.6288s
-lcet10.txt | 5.6983s
-paper-100k.pdf | 0.0905s
-plrabn12.txt | 7.3254s
-urls.10K | 7.9783s
+alice29.txt | 1.3289s
+asyoulik.txt | 1.1349s
+fireworks.jpg | 0.0211s
+geo.protodata | 0.4063s
+html | 0.4076s
+html_x_4 | 1.6339s
+kppkn.gtb | 1.0701s
+lcet10.txt | 3.5841s
+paper-100k.pdf | 0.0638s
+plrabn12.txt | 4.5476s
+urls.10K | 4.4155s
 
 
 https://github.com/NimCompression/nimsnappyc results:
