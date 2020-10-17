@@ -74,12 +74,12 @@ This implementation was heavily influenced by [snappy-c](https://github.com/andi
 import supersnappy
 ```
 
-## **type** SnappyException
+## **type** SnappyError
 
 Raised if an operation fails.
 
 ```nim
-SnappyException = object of ValueError
+SnappyError = object of ValueError
 ```
 
 ## **func** uncompress
@@ -87,7 +87,7 @@ SnappyException = object of ValueError
 Uncompresses src into dst. This resizes dst as needed and starts writing at dst index 0.
 
 ```nim
-func uncompress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyException].}
+func uncompress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyError].}
 ```
 
 ## **func** uncompress
@@ -95,7 +95,7 @@ func uncompress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyExc
 Uncompresses src and returns the uncompressed data seq.
 
 ```nim
-func uncompress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyException].}
+func uncompress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyError].}
 ```
 
 ## **func** compress
@@ -103,7 +103,7 @@ func uncompress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyExce
 Compresses src into dst. This resizes dst as needed and starts writing at dst index 0.
 
 ```nim
-func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyException], tags: [].}
+func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyError].}
 ```
 
 ## **func** compress
@@ -111,7 +111,7 @@ func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyExcep
 Compresses src and returns the compressed data seq.
 
 ```nim
-func compress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyException], tags: [].}
+func compress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyError].}
 ```
 
 ## **template** uncompress
