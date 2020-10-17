@@ -44,7 +44,7 @@ const
   maxCompressTableSize = 1 shl 14
 
 type
-  SnappyException* = object of ValueError ## Raised if an operation fails.
+  SnappyError* = object of ValueError ## Raised if an operation fails.
 
 {.push checks: off.}
 
@@ -116,12 +116,12 @@ func varint(buf: openArray[uint8]): (uint32, int) =
 
 template failUncompress() =
   raise newException(
-    SnappyException, "Invalid buffer, unable to uncompress"
+    SnappyError, "Invalid buffer, unable to uncompress"
   )
 
 template failCompress() =
   raise newException(
-    SnappyException, "Unable to compress buffer"
+    SnappyError, "Unable to compress buffer"
   )
 
 template read32(p: pointer): uint32 =
