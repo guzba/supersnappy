@@ -178,7 +178,7 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
 
       inc(ip, (entry shr 11).int + 1)
 
-      if dstLen - op < len or op <= offset - 1: # Catches offset == 0
+      if dstLen - op < len or op.uint <= offset.uint - 1: # Catches offset == 0
         failUncompress()
 
       if len <= 16 and offset >= 8 and dstLen > op + 16:
