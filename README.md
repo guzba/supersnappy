@@ -66,6 +66,8 @@ urls.10K | 2.5136s
 ### Testing
 `nimble test`
 
+To prevent Supersnappy from causing a crash or otherwise misbehaving on bad input data, a fuzzer has been run against it. You can do run the fuzzer any time by running `nim c -r tests/fuzz.nim`
+
 ### Credits
 
 This implementation was heavily influenced by [snappy-c](https://github.com/andikleen/snappy-c).
