@@ -1,4 +1,4 @@
-import strformat, random, supersnappy
+import random, strformat, supersnappy
 
 randomize()
 
