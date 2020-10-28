@@ -18,12 +18,12 @@ block jangko_snappy:
       original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
       start = getMonoTime().ticks
     var
-      compressedLen = encode(original).len
+      compressedLen = snappy.encode(original).len
       c: int
     for i in 0 ..< iterations:
       let
-        compressed = encode(original)
-        uncompressed = decode(compressed)
+        compressed = snappy.encode(original)
+        uncompressed = snappy.decode(compressed)
       inc(c, uncompressed.len)
     let
       delta = float64(getMonoTime().ticks - start) / 1000000000.0
@@ -37,17 +37,37 @@ block nimcompression_nimsnappyc:
       original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
       start = getMonoTime().ticks
     var
-      compressedLen = snappyCompress(original).len
+      compressedLen = nimsnappyc.snappyCompress(original).len
       c: int
     for i in 0 ..< iterations:
       let
-        compressed = snappyCompress(original)
-        uncompressed = snappyUncompress(compressed)
+        compressed = nimsnappyc.snappyCompress(original)
+        uncompressed = nimsnappyc.snappyUncompress(compressed)
       inc(c, uncompressed.len)
     let
       delta = float64(getMonoTime().ticks - start) / 1000000000.0
       percent = 100 - ((compressedLen / original.len) * 100)
     echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
+
+# import nimsnappy # Requires libsnappy.dll
+# block dfdeshom_nimsnappy:
+#   echo "https://github.com/dfdeshom/nimsnappy"
+#   for file in files:
+#     let
+#       original = readFile(&"tests/data/{file}")
+#       start = getMonoTime().ticks
+#     var
+#       compressedLen = nimsnappy.compress(original).len
+#       c: int
+#     for i in 0 ..< iterations:
+#       let
+#         compressed = nimsnappy.compress(original)
+#         uncompressed = nimsnappy.uncompress(compressed)
+#       inc(c, uncompressed.len)
+#     let
+#       delta = float64(getMonoTime().ticks - start) / 1000000000.0
+#       percent = 100 - ((compressedLen / original.len) * 100)
+#     echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
 
 block guzba_supersnappy:
   echo "https://github.com/guzba/supersnappy"
