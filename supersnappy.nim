@@ -404,14 +404,13 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   let (bytes, varintBytes) = varint(src.len.uint32)
   copyMem(dst[0].addr, bytes[0].unsafeAddr, varintBytes)
 
-  let srcLen = src.len
   var
     ip = 0
     op = varintBytes
     compressTable = newSeqUninitialized[uint16](maxCompressTableSize)
-  while ip < srcLen:
+  while ip < src.len:
     let
-      fragmentSize = srcLen - ip
+      fragmentSize = src.len - ip
       numToRead = min(fragmentSize, maxBlockSize)
     if numToRead <= 0:
       failCompress()
