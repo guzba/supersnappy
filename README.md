@@ -65,6 +65,22 @@ paper-100k.pdf | 0.0879s
 plrabn12.txt | 2.6987s
 urls.10K | 2.5136s
 
+https://github.com/dfdeshom/nimsnappy (Google snappy wrapper) results:
+
+File | Time
+--- | ---:
+alice29.txt | 0.7470s
+asyoulik.txt | 0.6887s
+fireworks.jpg | 0.0166s
+geo.protodata | 0.1743s
+html | 0.1909s
+html_x_4 | 0.7702s
+kppkn.gtb | 0.6481s
+lcet10.txt | 1.9751s
+paper-100k.pdf | 0.0258s
+plrabn12.txt | 2.7316s
+urls.10K | 2.3412s
+
 ### Testing
 `nimble test`
 
