@@ -38,7 +38,8 @@ const files = [
   "lcet10.txt",
   "paper-100k.pdf",
   "plrabn12.txt",
-  "urls.10K"
+  "urls.10K",
+  "tor-list.gold"
 ]
 
 for file in files:
@@ -54,11 +55,3 @@ for file in files:
   compress(original, reuseCompressed)
   uncompress(reuseCompressed, reuseUncompressed)
   doAssert reuseUncompressed == original, &"Uncompressed != original for {file}"
-
-for file in files:
-  let
-    original = readFile(&"tests/data/{file}")
-    compressed = readFile(&"tests/data/{file}.snappy")
-    uncompressed = uncompress(compressed)
-  doAssert uncompressed == original,
-    &"Uncompressed != original for {file} (snappy-c output)"

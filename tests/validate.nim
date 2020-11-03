@@ -11,7 +11,8 @@ const files = [
   "lcet10.txt",
   "paper-100k.pdf",
   "plrabn12.txt",
-  "urls.10K"
+  "urls.10K",
+  "tor-list.gold"
 ]
 
 # import nimsnappy # Requires libsnappy.dll
