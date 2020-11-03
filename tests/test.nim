@@ -28,9 +28,17 @@ block baddata:
       discard
 
 const files = [
-  "alice29.txt", "asyoulik.txt", "fireworks.jpg", "geo.protodata",
-  "html", "html_x_4", "kppkn.gtb", "lcet10.txt", "paper-100k.pdf",
-  "plrabn12.txt", "urls.10K"
+  "alice29.txt",
+  "asyoulik.txt",
+  "fireworks.jpg",
+  "geo.protodata",
+  "html",
+  "html_x_4",
+  "kppkn.gtb",
+  "lcet10.txt",
+  "paper-100k.pdf",
+  "plrabn12.txt",
+  "urls.10K"
 ]
 
 for file in files:
