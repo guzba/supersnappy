@@ -130,7 +130,7 @@ func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyError
 
 ## **func** compress
 
-Compresses src and returns the compressed data seq.
+Compresses src and returns the compressed data.
 
 ```nim
 func compress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyError].}

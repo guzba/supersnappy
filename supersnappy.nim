@@ -396,7 +396,7 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
-  when int.sizeof>4:
+  when sizeof(int) > 4:
     if src.len > high(uint32).int:
       failCompress()
 
@@ -422,7 +422,7 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   dst.setLen(op)
 
 func compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
-  ## Compresses src and returns the compressed data seq.
+  ## Compresses src and returns the compressed data.
   compress(src, result)
 
 template uncompress*(src: string): string =
