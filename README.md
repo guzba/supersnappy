@@ -10,7 +10,7 @@ Supersnappy works well using Nim's relatively new `--gc:arc` and `--gc:orc` as w
 
 I have also verified that Supersnappy builds with `--experimental:strictFuncs` on Nim 1.4.0.
 
-### Performance
+## Performance
 
 Benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alternatives. Check the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
 
@@ -32,22 +32,21 @@ paper-100k.pdf | 0.0656s
 plrabn12.txt | 2.1893s
 urls.10K | 1.8366s
 
-https://github.com/jangko/snappy results:
+https://github.com/dfdeshom/nimsnappy (Google snappy wrapper) results:
 
 File | Time
 --- | ---:
-alice29.txt | 1.3289s
-asyoulik.txt | 1.1349s
-fireworks.jpg | 0.0211s
-geo.protodata | 0.4063s
-html | 0.4076s
-html_x_4 | 1.6339s
-kppkn.gtb | 1.0701s
-lcet10.txt | 3.5841s
-paper-100k.pdf | 0.0638s
-plrabn12.txt | 4.5476s
-urls.10K | 4.4155s
-
+alice29.txt | 0.7470s
+asyoulik.txt | 0.6887s
+fireworks.jpg | 0.0166s
+geo.protodata | 0.1743s
+html | 0.1909s
+html_x_4 | 0.7702s
+kppkn.gtb | 0.6481s
+lcet10.txt | 1.9751s
+paper-100k.pdf | 0.0258s
+plrabn12.txt | 2.7316s
+urls.10K | 2.3412s
 
 https://github.com/NimCompression/nimsnappyc results:
 
@@ -65,28 +64,28 @@ paper-100k.pdf | 0.0879s
 plrabn12.txt | 2.6987s
 urls.10K | 2.5136s
 
-https://github.com/dfdeshom/nimsnappy (Google snappy wrapper) results:
+https://github.com/jangko/snappy results:
 
 File | Time
 --- | ---:
-alice29.txt | 0.7470s
-asyoulik.txt | 0.6887s
-fireworks.jpg | 0.0166s
-geo.protodata | 0.1743s
-html | 0.1909s
-html_x_4 | 0.7702s
-kppkn.gtb | 0.6481s
-lcet10.txt | 1.9751s
-paper-100k.pdf | 0.0258s
-plrabn12.txt | 2.7316s
-urls.10K | 2.3412s
+alice29.txt | 1.3289s
+asyoulik.txt | 1.1349s
+fireworks.jpg | 0.0211s
+geo.protodata | 0.4063s
+html | 0.4076s
+html_x_4 | 1.6339s
+kppkn.gtb | 1.0701s
+lcet10.txt | 3.5841s
+paper-100k.pdf | 0.0638s
+plrabn12.txt | 4.5476s
+urls.10K | 4.4155s
 
-### Testing
+## Testing
 `nimble test`
 
 To prevent Supersnappy from causing a crash or otherwise misbehaving on bad input data, a fuzzer has been run against it. You can do run the fuzzer any time by running `nim c -r tests/fuzz.nim`
 
-### Credits
+## Credits
 
 This implementation was heavily influenced by [snappy-c](https://github.com/andikleen/snappy-c).
 
