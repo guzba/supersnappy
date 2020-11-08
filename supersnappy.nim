@@ -396,8 +396,9 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
-  if src.len > high(uint32).int:
-    failCompress()
+  when int.sizeof>4:
+    if src.len > high(uint32).int:
+      failCompress()
 
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
 
