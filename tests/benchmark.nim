@@ -11,43 +11,24 @@ const
   ]
   iterations = 1000
 
-block jangko_snappy:
-  echo "https://github.com/jangko/snappy"
+block guzba_supersnappy:
+  echo "https://github.com/guzba/supersnappy"
   for file in files:
     let
       original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
       start = getMonoTime().ticks
     var
-      compressedLen = snappy.encode(original).len
+      compressedLen = supersnappy.compress(original).len
       c: int
     for i in 0 ..< iterations:
       let
-        compressed = snappy.encode(original)
-        uncompressed = snappy.decode(compressed)
+        compressed = supersnappy.compress(original)
+        uncompressed = supersnappy.uncompress(compressed)
       inc(c, uncompressed.len)
     let
       delta = float64(getMonoTime().ticks - start) / 1000000000.0
       percent = 100 - ((compressedLen / original.len) * 100)
-    echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
-
-block nimcompression_nimsnappyc:
-  echo "https://github.com/NimCompression/nimsnappyc"
-  for file in files:
-    let
-      original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
-      start = getMonoTime().ticks
-    var
-      compressedLen = nimsnappyc.snappyCompress(original).len
-      c: int
-    for i in 0 ..< iterations:
-      let
-        compressed = nimsnappyc.snappyCompress(original)
-        uncompressed = nimsnappyc.snappyUncompress(compressed)
-      inc(c, uncompressed.len)
-    let
-      delta = float64(getMonoTime().ticks - start) / 1000000000.0
-      percent = 100 - ((compressedLen / original.len) * 100)
-    echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
+    echo &"  {file}: {delta:.4f}s {percent:.2f}% reduction [{c}]"
 
 # import nimsnappy # Requires libsnappy.dll
 # block dfdeshom_nimsnappy:
@@ -67,42 +48,42 @@ block nimcompression_nimsnappyc:
 #     let
 #       delta = float64(getMonoTime().ticks - start) / 1000000000.0
 #       percent = 100 - ((compressedLen / original.len) * 100)
-#     echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
+#     echo &"  {file}: {delta:.4f}s {percent:.2f}% reduction [{c}]"
 
-block guzba_supersnappy:
-  echo "https://github.com/guzba/supersnappy"
+block nimcompression_nimsnappyc:
+  echo "https://github.com/NimCompression/nimsnappyc"
   for file in files:
     let
       original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
       start = getMonoTime().ticks
     var
-      compressedLen = supersnappy.compress(original).len
+      compressedLen = nimsnappyc.snappyCompress(original).len
       c: int
     for i in 0 ..< iterations:
       let
-        compressed = supersnappy.compress(original)
-        uncompressed = supersnappy.uncompress(compressed)
+        compressed = nimsnappyc.snappyCompress(original)
+        uncompressed = nimsnappyc.snappyUncompress(compressed)
       inc(c, uncompressed.len)
     let
       delta = float64(getMonoTime().ticks - start) / 1000000000.0
       percent = 100 - ((compressedLen / original.len) * 100)
-    echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
+    echo &"  {file}: {delta:.4f}s {percent:.2f}% reduction [{c}]"
 
-block guzba_supersnappy_reuse:
-  echo "https://github.com/guzba/supersnappy [reuse]"
-  var reuseCompress, reuseUncompress: seq[uint8]
+block jangko_snappy:
+  echo "https://github.com/jangko/snappy"
   for file in files:
     let
       original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
       start = getMonoTime().ticks
     var
-      compressedLen = supersnappy.compress(original).len
+      compressedLen = snappy.encode(original).len
       c: int
     for i in 0 ..< iterations:
-      compress(original, reuseCompress)
-      uncompress(reuseCompress, reuseUncompress)
-      inc(c, reuseUncompress.len)
+      let
+        compressed = snappy.encode(original)
+        uncompressed = snappy.decode(compressed)
+      inc(c, uncompressed.len)
     let
       delta = float64(getMonoTime().ticks - start) / 1000000000.0
       percent = 100 - ((compressedLen / original.len) * 100)
-    echo &"  {file}: {delta:.4f}s (compressed to {compressedLen} bytes, {percent:.2f}% reduction) [{c}]"
+    echo &"  {file}: {delta:.4f}s {percent:.2f}% reduction [{c}]"

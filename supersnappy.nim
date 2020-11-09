@@ -46,7 +46,8 @@ const
 type
   SnappyError* = object of ValueError ## Raised if an operation fails.
 
-{.push checks: off.}
+when defined(release):
+  {.push checks: off.}
 
 func varint(value: uint32): (array[5, uint8], int) =
   if value < 1 shl 7:
@@ -431,4 +432,5 @@ template uncompress*(src: string): string =
 template compress*(src: string): string =
   cast[string](compress(cast[seq[uint8]](src)))
 
-{.pop.}
+when defined(release):
+  {.pop.}
