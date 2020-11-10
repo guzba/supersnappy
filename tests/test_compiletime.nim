@@ -1,4 +1,4 @@
-import strformat, supersnappy
+import supersnappy
 
 const
   test1Path = "tests/data/alice29.txt"
