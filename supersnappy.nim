@@ -55,25 +55,25 @@ func varint(value: uint32): (array[5, uint8], int) =
     result[0][0] = value.uint8
   elif value < 1 shl 14:
     result[1] = 2
-    result[0][0] = ((value or 0x80) and 255).uint8
+    result[0][0] = ((value or 128) and 255).uint8
     result[0][1] = ((value shr 7) and 255).uint8
   elif value < 1 shl 21:
     result[1] = 3
-    result[0][0] = ((value or 0x80) and 255).uint8
-    result[0][1] = (((value shr 7) or 0x80) and 255).uint8
+    result[0][0] = ((value or 128) and 255).uint8
+    result[0][1] = (((value shr 7) or 128) and 255).uint8
     result[0][2] = ((value shr 14) and 255).uint8
   elif value < 1 shl 28:
     result[1] = 4
-    result[0][0] = ((value or 0x80) and 255).uint8
-    result[0][1] = (((value shr 7) or 0x80) and 255).uint8
-    result[0][2] = (((value shr 14) or 0x80) and 255).uint8
+    result[0][0] = ((value or 128) and 255).uint8
+    result[0][1] = (((value shr 7) or 128) and 255).uint8
+    result[0][2] = (((value shr 14) or 128) and 255).uint8
     result[0][3] = ((value shr 21) and 255).uint8
   else:
     result[1] = 5
-    result[0][0] = ((value or 0x80) and 255).uint8
-    result[0][1] = (((value shr 7) or 0x80) and 255).uint8
-    result[0][2] = (((value shr 14) or 0x80) and 255).uint8
-    result[0][3] = (((value shr 21) or 0x80) and 255).uint8
+    result[0][0] = ((value or 128) and 255).uint8
+    result[0][1] = (((value shr 7) or 128) and 255).uint8
+    result[0][2] = (((value shr 14) or 128) and 255).uint8
+    result[0][3] = (((value shr 21) or 128) and 255).uint8
     result[0][4] = ((value shr 28) and 255).uint8
 
 func varint(buf: openarray[uint8]): (uint32, int) =
@@ -81,37 +81,37 @@ func varint(buf: openarray[uint8]): (uint32, int) =
     return
 
   var b = buf[0]
-  result[0] = b and 0x7F
+  result[0] = b and 127
   result[1] = 1
-  if b < 0x80:
+  if b < 128:
     return
   if buf.len == 1:
     return (0.uint32, 0)
   b = buf[1]
-  result[0] = result[0] or ((b and 0x7F).uint32 shl 7)
+  result[0] = result[0] or ((b and 127).uint32 shl 7)
   result[1] = 2
-  if b < 0x80:
+  if b < 128:
     return
   if buf.len == 2:
     return (0.uint32, 0)
   b = buf[2]
-  result[0] = result[0] or ((b and 0x7F).uint32 shl 14)
+  result[0] = result[0] or ((b and 127).uint32 shl 14)
   result[1] = 3
-  if b < 0x80:
+  if b < 128:
     return
   if buf.len == 3:
     return (0.uint32, 0)
   b = buf[3]
-  result[0] = result[0] or ((b and 0x7F).uint32 shl 21)
+  result[0] = result[0] or ((b and 127).uint32 shl 21)
   result[1] = 4
-  if b < 0x80:
+  if b < 128:
     return
   if buf.len == 4:
     return (0.uint32, 0)
   b = buf[4]
-  result[0] = result[0] or ((b and 0x7F).uint32 shl 28)
+  result[0] = result[0] or ((b and 127).uint32 shl 28)
   result[1] = 5
-  if b < 0x10:
+  if b < 16:
     return
   return (0.uint32, 0)
 
@@ -171,7 +171,7 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
     ip = bytesRead
     op = 0
   while ip < srcLen:
-    if (src[ip] and 0x03) == 0x00: # LITERAL
+    if (src[ip] and 3) == 0: # LITERAL
       var len = src[ip].int shr 2 + 1
       inc ip
 
@@ -199,7 +199,7 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
       let
         entry = uncompressLookup[src[ip]]
         trailer = read32(src, ip + 1) and lenWordMask[entry shr 11]
-        len = (entry and 0xFF).int
+        len = (entry and 255).int
         offset = (entry and 0x700).int + trailer.int
 
       inc(ip, (entry shr 11).int + 1)
@@ -248,7 +248,7 @@ func emitLiteral(
 ) =
   var n = len - 1
   if n < 60:
-    dst[op] = 0x00 or (n.uint8 shl 2)
+    dst[op] = n.uint8 shl 2
     inc op
     if fastPath and len <= 16:
       copy64(dst, src, op, ip)
@@ -261,11 +261,11 @@ func emitLiteral(
       count: int
     inc op
     while n > 0:
-      dst[op] = (n and 0xFF).uint8
+      dst[op] = (n and 255).uint8
       n = n shr 8
       inc op
       inc count
-    dst[base] = 0x00 or ((59 + count) shl 2).uint8
+    dst[base] = 0 or ((59 + count) shl 2).uint8
 
   when nimvm:
     for i in 0 ..< len:
@@ -303,12 +303,12 @@ func emitCopy64Max(
   len: int
 ) =
   if len < 12 and offset < 2048:
-    dst[op] = 0x01 + (((len - 4) shl 2) + ((offset shr 8) shl 5)).uint8
+    dst[op] = 1 + (((len - 4) shl 2) + ((offset shr 8) shl 5)).uint8
     inc op
-    dst[op] = (offset and 0xFF).uint8
+    dst[op] = (offset and 255).uint8
     inc op
   else:
-    dst[op] = 0x02 + ((len - 1) shl 2).uint8
+    dst[op] = 2 + ((len - 1) shl 2).uint8
     inc op
     when nimvm:
       let tmp = (offset and 0xffff).uint16
