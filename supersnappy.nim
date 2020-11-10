@@ -55,28 +55,28 @@ func varint(value: uint32): (array[5, uint8], int) =
     result[0][0] = value.uint8
   elif value < 1 shl 14:
     result[1] = 2
-    result[0][0] = (value or 0x80).uint8
-    result[0][1] = (value shr 7).uint8
+    result[0][0] = ((value or 0x80) and 255).uint8
+    result[0][1] = ((value shr 7) and 255).uint8
   elif value < 1 shl 21:
     result[1] = 3
-    result[0][0] = (value or 0x80).uint8
-    result[0][1] = ((value shr 7) or 0x80).uint8
-    result[0][2] = (value shr 14).uint8
+    result[0][0] = ((value or 0x80) and 255).uint8
+    result[0][1] = (((value shr 7) or 0x80) and 255).uint8
+    result[0][2] = ((value shr 14) and 255).uint8
   elif value < 1 shl 28:
     result[1] = 4
-    result[0][0] = (value or 0x80).uint8
-    result[0][1] = ((value shr 7) or 0x80).uint8
-    result[0][2] = ((value shr 14) or 0x80).uint8
-    result[0][3] = (value shr 21).uint8
+    result[0][0] = ((value or 0x80) and 255).uint8
+    result[0][1] = (((value shr 7) or 0x80) and 255).uint8
+    result[0][2] = (((value shr 14) or 0x80) and 255).uint8
+    result[0][3] = ((value shr 21) and 255).uint8
   else:
     result[1] = 5
-    result[0][0] = (value or 0x80).uint8
-    result[0][1] = ((value shr 7) or 0x80).uint8
-    result[0][2] = ((value shr 14) or 0x80).uint8
-    result[0][3] = ((value shr 21) or 0x80).uint8
-    result[0][4] = (value shr 28).uint8
+    result[0][0] = ((value or 0x80) and 255).uint8
+    result[0][1] = (((value shr 7) or 0x80) and 255).uint8
+    result[0][2] = (((value shr 14) or 0x80) and 255).uint8
+    result[0][3] = (((value shr 21) or 0x80) and 255).uint8
+    result[0][4] = ((value shr 28) and 255).uint8
 
-func varint(buf: openArray[uint8]): (uint32, int) =
+func varint(buf: openarray[uint8]): (uint32, int) =
   if buf.len == 0:
     return
 
@@ -125,16 +125,36 @@ template failCompress() =
     SnappyError, "Unable to compress buffer"
   )
 
-template read32(p: pointer): uint32 =
-  cast[ptr uint32](p)[]
+template read32(s: openarray[uint8], pos: int): uint32 =
+  when nimvm:
+    (s[pos + 0].uint32 shl 0) or
+    (s[pos + 1].uint32 shl 8) or
+    (s[pos + 2].uint32 shl 16) or
+    (s[pos + 3].uint32 shl 24)
+  else:
+    cast[ptr uint32](s[pos].unsafeAddr)[]
 
-template read64(p: pointer): uint64 =
-  cast[ptr uint64](p)[]
+template read64(s: openarray[uint8], pos: int): uint64 =
+  when nimvm:
+    (s[pos + 0].uint64 shl 0) or
+    (s[pos + 1].uint64 shl 8) or
+    (s[pos + 2].uint64 shl 16) or
+    (s[pos + 3].uint64 shl 24) or
+    (s[pos + 4].uint64 shl 32) or
+    (s[pos + 5].uint64 shl 40) or
+    (s[pos + 6].uint64 shl 48) or
+    (s[pos + 7].uint64 shl 56)
+  else:
+    cast[ptr uint64](s[pos].unsafeAddr)[]
 
-template copy64(dst, src: pointer) =
-  cast[ptr uint64](dst)[] = read64(src)
+template copy64(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
+  when nimvm:
+    for i in 0 .. 7:
+      dst[op + i] = src[ip + i]
+  else:
+    cast[ptr uint64](dst[op].addr)[] = read64(src, ip)
 
-func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
+func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -156,24 +176,29 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
       inc ip
 
       if len <= 16 and srcLen > ip + 16 and dstLen > op + 16:
-        copy64(dst[op].addr, src[ip].unsafeAddr)
-        copy64(dst[op + 8].addr, src[ip + 8].unsafeAddr)
+        copy64(dst, src, op, ip)
+        copy64(dst, src, op + 8, ip + 8)
       else:
         if len >= 61:
           let bytes = len - 60
-          len = (read32(src[ip].unsafeAddr) and lenWordMask[bytes]).int + 1
+          len = (read32(src, ip) and lenWordMask[bytes]).int + 1
           inc(ip, bytes)
 
         if len <= 0 or ip + len > srcLen or op + len > dstLen:
           failUncompress()
-        copyMem(dst[op].addr, src[ip].unsafeAddr, len)
+
+        when nimvm:
+          for i in 0 ..< len:
+            dst[op + i] = src[ip + i]
+        else:
+          copyMem(dst[op].addr, src[ip].unsafeAddr, len)
 
       inc(ip, len)
       inc(op, len)
     else: # COPY
       let
         entry = uncompressLookup[src[ip]]
-        trailer = read32(src[ip + 1].unsafeAddr) and lenWordMask[entry shr 11]
+        trailer = read32(src, ip + 1) and lenWordMask[entry shr 11]
         len = (entry and 0xFF).int
         offset = (entry and 0x700).int + trailer.int
 
@@ -183,8 +208,8 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
         failUncompress()
 
       if len <= 16 and offset >= 8 and dstLen > op + 16:
-        copy64(dst[op].addr, dst[op - offset].addr)
-        copy64(dst[op + 8].addr, dst[op - offset + 8].addr)
+        copy64(dst, dst, op, op - offset)
+        copy64(dst, dst, op + 8, op - offset + 8)
         inc(op, len)
       elif dstLen - op >= len + 10:
         var
@@ -192,11 +217,11 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
           pos = op
           remaining = len
         while pos - src < 8:
-          copy64(dst[pos].addr, dst[src].addr)
+          copy64(dst, dst, pos, src)
           dec(remaining, pos - src)
           inc(pos, pos - src)
         while remaining > 0:
-          copy64(dst[pos].addr, dst[src].addr)
+          copy64(dst, dst, pos, src)
           inc(src, 8)
           inc(pos, 8)
           dec(remaining, 8)
@@ -209,13 +234,13 @@ func uncompress*(src: openArray[uint8], dst: var seq[uint8]) =
   if op != dstLen:
     failUncompress()
 
-func uncompress*(src: openArray[uint8]): seq[uint8] {.inline.} =
+func uncompress*(src: openarray[uint8]): seq[uint8] {.inline.} =
   ## Uncompresses src and returns the uncompressed data seq.
   uncompress(src, result)
 
 func emitLiteral(
   dst: var seq[uint8],
-  src: openArray[uint8],
+  src: openarray[uint8],
   op: var int,
   ip: int,
   len: int,
@@ -226,8 +251,8 @@ func emitLiteral(
     dst[op] = 0x00 or (n.uint8 shl 2)
     inc op
     if fastPath and len <= 16:
-      copy64(dst[op].addr, src[ip].unsafeAddr)
-      copy64(dst[op + 8].addr, src[ip + 8].unsafeAddr)
+      copy64(dst, src, op, ip)
+      copy64(dst, src, op + 8, ip + 8)
       inc(op, len)
       return
   else:
@@ -242,20 +267,25 @@ func emitLiteral(
       inc count
     dst[base] = 0x00 or ((59 + count) shl 2).uint8
 
-  copyMem(dst[op].addr, src[ip].unsafeAddr, len)
+  when nimvm:
+    for i in 0 ..< len:
+      dst[op + i] = src[ip + i]
+  else:
+    copyMem(dst[op].addr, src[ip].unsafeAddr, len)
+
   inc(op, len)
 
-func findMatchLength(src: openArray[uint8], s1, s2, limit: int): int =
+func findMatchLength(src: openarray[uint8], s1, s2, limit: int): int =
   var
     s1 = s1
     s2 = s2
   while s2 <= limit - 8:
-    if read64(src[s2].unsafeAddr) == read64(src[s1 + result].unsafeAddr):
+    if read64(src, s2) == read64(src, s1 + result):
       inc(s2, 8)
       inc(result, 8)
     else:
       let
-        x = read64(src[s2].unsafeAddr) xor read64(src[s1 + result].unsafeAddr)
+        x = read64(src, s2) xor read64(src, s1 + result)
         matchingBits = countTrailingZeroBits(x)
       inc(result, matchingBits shr 3)
       return
@@ -280,7 +310,12 @@ func emitCopy64Max(
   else:
     dst[op] = 0x02 + ((len - 1) shl 2).uint8
     inc op
-    cast[ptr uint16](dst[op].addr)[] = offset.uint16
+    when nimvm:
+      let tmp = (offset and 0xffff).uint16
+      dst[op + 0] = ((tmp shl 0) and 255).uint8
+      dst[op + 1] = ((tmp shr 8) and 255).uint8
+    else:
+      cast[ptr uint16](dst[op].addr)[] = offset.uint16
     inc(op, 2)
 
 func emitCopy(
@@ -302,7 +337,7 @@ func emitCopy(
 
 func compressFragment(
   dst: var seq[uint8],
-  src: openArray[uint8],
+  src: openarray[uint8],
   op: var int,
   start: int,
   len: int,
@@ -319,13 +354,17 @@ func compressFragment(
     tableSize = tableSize shl 1
     dec shift
 
-  zeroMem(compressTable[0].addr, tableSize * sizeof(uint16))
+  when nimvm:
+    for i in 0 ..< tableSize:
+      compressTable[i] = 0
+  else:
+    zeroMem(compressTable[0].addr, tableSize * sizeof(uint16))
 
   template hash(v: uint32): uint32 =
     (v * 0x1e35a7bd) shr shift
 
   template uint32AtOffset(v: uint64, offset: int): uint32 =
-    (v shr (8 * offset)).uint32
+    ((v shr (8 * offset)) and 0xffffffff.uint32).uint32
 
   template emitRemainder() =
     if nextEmit < ipEnd:
@@ -335,7 +374,7 @@ func compressFragment(
     let ipLimit = start + len - 15
     inc ip
 
-    var nextHash = hash(read32(src[ip].unsafeAddr))
+    var nextHash = hash(read32(src, ip))
     while true:
       var
         skipBytes = 32
@@ -351,11 +390,11 @@ func compressFragment(
         if nextIp > ipLimit:
           emitRemainder()
           return
-        nextHash = hash(read32(src[nextIp].unsafeAddr))
+        nextHash = hash(read32(src, nextIp))
         candidate = start + compressTable[h].int
         compressTable[h] = (ip - start).uint16
 
-        if read32(src[ip].unsafeAddr) == read32(src[candidate].unsafeAddr):
+        if read32(src, ip) == read32(src, candidate):
           break
 
       emitLiteral(dst, src, op, nextEmit, ip - nextEmit, true)
@@ -376,13 +415,13 @@ func compressFragment(
         if ip >= ipLimit:
           emitRemainder()
           return
-        inputBytes = read64(src[insertTail].unsafeAddr)
+        inputBytes = read64(src, insertTail)
         let
           prevHash = hash(uint32AtOffset(inputBytes, 0))
           curHash = hash(uint32AtOffset(inputBytes, 1))
         compressTable[prevHash] = (ip - start - 1).uint16
         candidate = start + compressTable[curHash].int
-        candidateBytes = read32(src[candidate].unsafeAddr)
+        candidateBytes = read32(src, candidate)
         compressTable[curHash] = (ip - start).uint16
 
         if uint32AtOffset(inputBytes, 1) != candidateBytes:
@@ -393,7 +432,7 @@ func compressFragment(
 
   emitRemainder()
 
-func compress*(src: openArray[uint8], dst: var seq[uint8]) =
+func compress*(src: openarray[uint8], dst: var seq[uint8]) =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -404,12 +443,17 @@ func compress*(src: openArray[uint8], dst: var seq[uint8]) =
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
 
   let (bytes, varintBytes) = varint(src.len.uint32)
-  copyMem(dst[0].addr, bytes[0].unsafeAddr, varintBytes)
+  for i in 0 ..< varintBytes:
+    dst[i] = bytes[i]
 
   var
     ip = 0
     op = varintBytes
-    compressTable = newSeqUninitialized[uint16](maxCompressTableSize)
+    compressTable = block:
+      when nimvm:
+        newSeq[uint16](maxCompressTableSize)
+      else:
+        newSeqUninitialized[uint16](maxCompressTableSize)
   while ip < src.len:
     let
       fragmentSize = src.len - ip
@@ -427,10 +471,30 @@ func compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
   compress(src, result)
 
 template uncompress*(src: string): string =
-  cast[string](uncompress(cast[seq[uint8]](src)))
+  when nimvm:
+    var tmp = newSeq[uint8](src.len)
+    for i, c in src:
+      tmp[i] = c.uint8
+    let uncompressed = uncompress(tmp)
+    var result = newStringOfCap(uncompressed.len)
+    for c in uncompressed:
+      result.add(c.char)
+    result
+  else:
+    cast[string](uncompress(cast[seq[uint8]](src)))
 
 template compress*(src: string): string =
-  cast[string](compress(cast[seq[uint8]](src)))
+  when nimvm:
+    var tmp = newSeq[uint8](src.len)
+    for i, c in src:
+      tmp[i] = c.uint8
+    let compressed = compress(tmp)
+    var result = newStringOfCap(compressed.len)
+    for c in compressed:
+      result.add(c.char)
+    result
+  else:
+    cast[string](compress(cast[seq[uint8]](src)))
 
 when defined(release):
   {.pop.}
