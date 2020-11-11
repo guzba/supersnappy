@@ -265,7 +265,7 @@ func emitLiteral(
       n = n shr 8
       inc op
       inc count
-    dst[base] = 0 or ((59 + count) shl 2).uint8
+    dst[base] = ((59 + count) shl 2).uint8
 
   when nimvm:
     for i in 0 ..< len:
@@ -275,18 +275,19 @@ func emitLiteral(
 
   inc(op, len)
 
-func findMatchLength(src: openarray[uint8], s1, s2, limit: int): int =
+func findMatchLength(
+  src: openarray[uint8], s1, s2, limit: int
+): int {.inline.} =
   var
     s1 = s1
     s2 = s2
   while s2 <= limit - 8:
-    if read64(src, s2) == read64(src, s1 + result):
+    let x = read64(src, s2) xor read64(src, s1 + result)
+    if x == 0:
       inc(s2, 8)
       inc(result, 8)
     else:
-      let
-        x = read64(src, s2) xor read64(src, s1 + result)
-        matchingBits = countTrailingZeroBits(x)
+      let matchingBits = countTrailingZeroBits(x)
       inc(result, matchingBits shr 3)
       return
   while s2 < limit:
@@ -466,7 +467,7 @@ func compress*(src: openarray[uint8], dst: var seq[uint8]) =
 
   dst.setLen(op)
 
-func compress*(src: openArray[uint8]): seq[uint8] {.inline.} =
+func compress*(src: openarray[uint8]): seq[uint8] {.inline.} =
   ## Compresses src and returns the compressed data.
   compress(src, result)
 
