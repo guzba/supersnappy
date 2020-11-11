@@ -405,9 +405,8 @@ func compressFragment(
         candidateBytes: uint32
       while true:
         let
-          base = ip
           matched = 4 + findMatchLength(src, candidate + 4, ip + 4, ipEnd)
-          offset = base - candidate
+          offset = ip - candidate
         inc(ip, matched)
         emitCopy(dst, op, offset, matched)
 
@@ -438,6 +437,7 @@ func compress*(src: openarray[uint8], dst: var seq[uint8]) =
   ## at dst index 0.
 
   when sizeof(int) > 4:
+    # Ensure varint32 prefix will work.
     if src.len > high(uint32).int:
       failCompress()
 
@@ -458,12 +458,12 @@ func compress*(src: openarray[uint8], dst: var seq[uint8]) =
   while ip < src.len:
     let
       fragmentSize = src.len - ip
-      numToRead = min(fragmentSize, maxBlockSize)
-    if numToRead <= 0:
+      bytesToRead = min(fragmentSize, maxBlockSize)
+    if bytesToRead <= 0:
       failCompress()
 
-    compressFragment(dst, src, op, ip, numToRead, compressTable)
-    inc(ip, numToRead)
+    compressFragment(dst, src, op, ip, bytesToRead, compressTable)
+    inc(ip, bytesToRead)
 
   dst.setLen(op)
 
