@@ -69,27 +69,23 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
 
   dst.setLen(uncompressedLen)
 
-  let
-    srcLen = src.len
-    dstLen = dst.len
   var
     ip = bytesRead
     op = 0
-  while ip < srcLen:
+  while ip < src.len:
     if (src[ip] and 3) == 0: # LITERAL
       var len = src[ip].int shr 2 + 1
       inc ip
 
-      if len <= 16 and srcLen > ip + 16 and dstLen > op + 16:
-        copy64(dst, src, op, ip)
-        copy64(dst, src, op + 8, ip + 8)
+      if len <= 16 and src.len > ip + 16 and dst.len > op + 16:
+        copy128(dst, src, op + 0, ip + 0)
       else:
         if len >= 61:
           let bytes = len - 60
           len = (read32(src, ip) and lenWordMask[bytes]).int + 1
           inc(ip, bytes)
 
-        if len <= 0 or ip + len > srcLen or op + len > dstLen:
+        if len <= 0 or ip + len > src.len or op + len > dst.len:
           failUncompress()
 
         when nimvm:
@@ -109,14 +105,14 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
 
       inc(ip, (entry shr 11).int + 1)
 
-      if dstLen - op < len or op.uint <= offset.uint - 1: # Catches offset == 0
+      if dst.len - op < len or op.uint <= offset.uint - 1: # Catches offset == 0
         failUncompress()
 
-      if len <= 16 and offset >= 8 and dstLen > op + 16:
+      if len <= 16 and offset >= 8 and dst.len > op + 16:
         copy64(dst, dst, op, op - offset)
         copy64(dst, dst, op + 8, op - offset + 8)
         inc(op, len)
-      elif dstLen - op >= len + 10:
+      elif dst.len - op >= len + 10:
         var
           src = op - offset
           pos = op
@@ -136,7 +132,7 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
           dst[op] = dst[op - offset]
           inc op
 
-  if op != dstLen:
+  if op != dst.len:
     failUncompress()
 
 func uncompress*(src: openarray[uint8]): seq[uint8] {.inline.} =
@@ -155,8 +151,7 @@ func emitLiteral(
     dst[op] = n.uint8 shl 2
     inc op
     if fastPath and len <= 16:
-      copy64(dst, src, op, ip)
-      copy64(dst, src, op + 8, ip + 8)
+      copy128(dst, src, op, ip)
       inc(op, len)
       return
   else:
