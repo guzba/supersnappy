@@ -89,11 +89,7 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
         if len <= 0 or ip + len > src.len or op + len > dst.len:
           failUncompress()
 
-        when nimvm:
-          for i in 0 ..< len:
-            dst[op + i] = src[ip + i]
-        else:
-          copyMem(dst[op].addr, src[ip].unsafeAddr, len)
+        copyRange(dst, src, op, ip, len)
 
       inc(ip, len)
       inc(op, len)
@@ -168,12 +164,7 @@ func emitLiteral(
       inc count
     dst[base] = ((59 + count) shl 2).uint8
 
-  when nimvm:
-    for i in 0 ..< len:
-      dst[op + i] = src[ip + i]
-  else:
-    copyMem(dst[op].addr, src[ip].unsafeAddr, len)
-
+  copyRange(dst, src, op, ip, len)
   inc(op, len)
 
 func findMatchLength(

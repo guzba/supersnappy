@@ -1,4 +1,4 @@
-import ../supersnappy, nimsnappyc, snappy, strformat
+import supersnappy, nimsnappyc, snappy, strformat
 
 const files = [
   "alice29.txt",

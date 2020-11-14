@@ -30,6 +30,15 @@ template copy64*(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
   else:
     cast[ptr uint64](dst[op].addr)[] = read64(src, ip)
 
+template copyRange*(
+  dst: var seq[uint8], src: openarray[uint8], op, ip, len: int
+) =
+  when nimvm:
+    for i in 0 ..< len:
+      dst[op + i] = src[ip + i]
+  else:
+    copyMem(dst[op].addr, src[ip].unsafeAddr, len)
+
 func varint*(value: uint32): (array[5, uint8], int) =
   if value < 1 shl 7:
     result[1] = 1
