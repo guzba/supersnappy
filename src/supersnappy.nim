@@ -78,7 +78,8 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
       inc ip
 
       if len <= 16 and src.len > ip + 16 and dst.len > op + 16:
-        copy128(dst, src, op + 0, ip + 0)
+        copy64(dst, src, op + 0, ip + 0)
+        copy64(dst, src, op + 8, ip + 8)
       else:
         if len >= 61:
           let bytes = len - 60
@@ -151,7 +152,8 @@ func emitLiteral(
     dst[op] = n.uint8 shl 2
     inc op
     if fastPath and len <= 16:
-      copy128(dst, src, op, ip)
+      copy64(dst, src, op + 0, ip + 0)
+      copy64(dst, src, op + 8, ip + 8)
       inc(op, len)
       return
   else:
@@ -182,19 +184,17 @@ func findMatchLength(
     s2 = s2
   while s2 <= limit - 8:
     let x = read64(src, s2) xor read64(src, s1 + result)
-    if x == 0:
-      inc(s2, 8)
-      inc(result, 8)
-    else:
+    if x != 0:
       let matchingBits = countTrailingZeroBits(x)
       inc(result, matchingBits shr 3)
       return
+    inc(s2, 8)
+    inc(result, 8)
   while s2 < limit:
-    if src[s2] == src[s1 + result]:
-      inc s2
-      inc result
-    else:
+    if src[s2] != src[s1 + result]:
       return
+    inc s2
+    inc result
 
 func emitCopy64Max(
   dst: var seq[uint8], op: var int, offset, len: int

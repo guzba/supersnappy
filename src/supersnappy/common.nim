@@ -30,20 +30,6 @@ template copy64*(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
   else:
     cast[ptr uint64](dst[op].addr)[] = read64(src, ip)
 
-when defined(amd64):
-  import simd
-
-  template copy128*(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
-    when nimvm:
-      copy64(dst, src, op + 0, ip + 0)
-      copy64(dst, src, op + 8, ip + 8)
-    else:
-      mm_storeu_si128(dst[op].addr, mm_loadu_si128(src[ip].unsafeAddr))
-else:
-  template copy128*(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
-    copy64(dst, src, op + 0, ip + 0)
-    copy64(dst, src, op + 8, ip + 8)
-
 func varint*(value: uint32): (array[5, uint8], int) =
   if value < 1 shl 7:
     result[1] = 1

@@ -32,7 +32,7 @@ kppkn.gtb | 0.4949s
 lcet10.txt | 1.6042s
 paper-100k.pdf | 0.0656s
 plrabn12.txt | 2.1893s
-urls.10K | 1.8366s
+urls.10K | 1.8146s
 
 https://github.com/dfdeshom/nimsnappy (Google snappy wrapper) results:
 
