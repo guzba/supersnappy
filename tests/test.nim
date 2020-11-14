@@ -1,6 +1,4 @@
-import strformat
-
-include ../supersnappy
+import strformat, supersnappy, supersnappy/common
 
 block varint:
   doAssert varint(0) == ([0.uint8, 0, 0, 0, 0], 1)
