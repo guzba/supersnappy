@@ -358,13 +358,13 @@ func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Compresses src and returns the compressed data.
   compress(result, src)
 
-template uncompress*(src: string): string =
+func uncompress*(src: string): string {.inline.} =
   when nimvm:
     vmSeq2Str(uncompress(vmStr2Seq(src)))
   else:
     cast[string](uncompress(cast[seq[uint8]](src)))
 
-template compress*(src: string): string =
+func compress*(src: string): string {.inline.} =
   when nimvm:
     vmSeq2Str(compress(vmStr2Seq(src)))
   else:

@@ -137,16 +137,16 @@ Compresses src and returns the compressed data.
 func compress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
 ```
 
-## **template** uncompress
+## **func** uncompress
 
 
 ```nim
-template uncompress(src: string): string
+func uncompress(src: string): string {.inline, raises: [SnappyError].}
 ```
 
-## **template** compress
+## **func** compress
 
 
 ```nim
-template compress(src: string): string
+func compress(src: string): string {.inline, raises: [SnappyError].}
 ```
