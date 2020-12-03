@@ -110,7 +110,7 @@ SnappyError = object of ValueError
 Uncompresses src into dst. This resizes dst as needed and starts writing at dst index 0.
 
 ```nim
-func uncompress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyError].}
+func uncompress(dst: var seq[uint8]; src: seq[uint8]) {.raises: [SnappyError], tags: [].}
 ```
 
 ## **func** uncompress
@@ -118,7 +118,7 @@ func uncompress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyErr
 Uncompresses src and returns the uncompressed data seq.
 
 ```nim
-func uncompress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyError].}
+func uncompress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
 ```
 
 ## **func** compress
@@ -126,7 +126,7 @@ func uncompress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyErro
 Compresses src into dst. This resizes dst as needed and starts writing at dst index 0.
 
 ```nim
-func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyError].}
+func compress(dst: var seq[uint8]; src: seq[uint8]) {.raises: [SnappyError], tags: [].}
 ```
 
 ## **func** compress
@@ -134,7 +134,7 @@ func compress(src: openArray[uint8]; dst: var seq[uint8]) {.raises: [SnappyError
 Compresses src and returns the compressed data.
 
 ```nim
-func compress(src: openArray[uint8]): seq[uint8] {.inline, raises: [SnappyError].}
+func compress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
 ```
 
 ## **template** uncompress
