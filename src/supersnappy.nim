@@ -59,7 +59,7 @@ template failCompress() =
     SnappyError, "Unable to compress buffer"
   )
 
-func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
+func uncompress*(dst: var seq[uint8], src: seq[uint8]) =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -94,6 +94,9 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
       inc(ip, len)
       inc(op, len)
     else: # COPY
+      if ip + 1 >= src.len:
+        failUncompress()
+
       let
         entry = uncompressLookup[src[ip]]
         trailer = read32(src, ip + 1) and lenWordMask[entry shr 11]
@@ -132,13 +135,13 @@ func uncompress*(src: openarray[uint8], dst: var seq[uint8]) =
   if op != dst.len:
     failUncompress()
 
-func uncompress*(src: openarray[uint8]): seq[uint8] {.inline.} =
+func uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Uncompresses src and returns the uncompressed data seq.
-  uncompress(src, result)
+  uncompress(result, src)
 
 func emitLiteral(
   dst: var seq[uint8],
-  src: openarray[uint8],
+  src: seq[uint8],
   op: var int,
   ip, len: int,
   fastPath: bool
@@ -168,7 +171,7 @@ func emitLiteral(
   inc(op, len)
 
 func findMatchLength(
-  src: openarray[uint8], s1, s2, limit: int
+  src: seq[uint8], s1, s2, limit: int
 ): int {.inline.} =
   var
     s1 = s1
@@ -222,7 +225,7 @@ func emitCopy(
 
 func compressFragment(
   dst: var seq[uint8],
-  src: openarray[uint8],
+  src: seq[uint8],
   op: var int,
   start: int,
   len: int,
@@ -316,7 +319,7 @@ func compressFragment(
 
   emitRemainder()
 
-func compress*(src: openarray[uint8], dst: var seq[uint8]) =
+func compress*(dst: var seq[uint8], src: seq[uint8]) =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -327,13 +330,13 @@ func compress*(src: openarray[uint8], dst: var seq[uint8]) =
 
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
 
-  let (bytes, varintBytes) = varint(src.len.uint32)
-  for i in 0 ..< varintBytes:
-    dst[i] = bytes[i]
+  let varintBytes = varint(src.len.uint32)
+  for i in 0 ..< varintBytes.len:
+    dst[i] = varintBytes[i]
 
   var
     ip = 0
-    op = varintBytes
+    op = varintBytes.len
     compressTable = block:
       when nimvm:
         newSeq[uint16](maxCompressTableSize)
@@ -351,9 +354,9 @@ func compress*(src: openarray[uint8], dst: var seq[uint8]) =
 
   dst.setLen(op)
 
-func compress*(src: openarray[uint8]): seq[uint8] {.inline.} =
+func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Compresses src and returns the compressed data.
-  compress(src, result)
+  compress(result, src)
 
 template uncompress*(src: string): string =
   when nimvm:

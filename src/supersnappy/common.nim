@@ -1,7 +1,7 @@
 when defined(release):
   {.push checks: off.}
 
-template read32*(s: openarray[uint8], pos: int): uint32 =
+template read32*(s: seq[uint8], pos: int): uint32 =
   when nimvm:
     (s[pos + 0].uint32 shl 0) or
     (s[pos + 1].uint32 shl 8) or
@@ -10,7 +10,7 @@ template read32*(s: openarray[uint8], pos: int): uint32 =
   else:
     cast[ptr uint32](s[pos].unsafeAddr)[]
 
-template read64*(s: openarray[uint8], pos: int): uint64 =
+template read64*(s: seq[uint8], pos: int): uint64 =
   when nimvm:
     (s[pos + 0].uint64 shl 0) or
     (s[pos + 1].uint64 shl 8) or
@@ -23,7 +23,7 @@ template read64*(s: openarray[uint8], pos: int): uint64 =
   else:
     cast[ptr uint64](s[pos].unsafeAddr)[]
 
-template copy64*(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
+template copy64*(dst: var seq[uint8], src: seq[uint8], op, ip: int) =
   when nimvm:
     for i in 0 .. 7:
       dst[op + i] = src[ip + i]
@@ -31,7 +31,7 @@ template copy64*(dst: var seq[uint8], src: openarray[uint8], op, ip: int) =
     cast[ptr uint64](dst[op].addr)[] = read64(src, ip)
 
 template copyRange*(
-  dst: var seq[uint8], src: openarray[uint8], op, ip, len: int
+  dst: var seq[uint8], src: seq[uint8], op, ip, len: int
 ) =
   when nimvm:
     for i in 0 ..< len:
@@ -39,34 +39,34 @@ template copyRange*(
   else:
     copyMem(dst[op].addr, src[ip].unsafeAddr, len)
 
-func varint*(value: uint32): (array[5, uint8], int) =
+func varint*(value: uint32): seq[uint8] =
   if value < 1 shl 7:
-    result[1] = 1
-    result[0][0] = value.uint8
+    result.setLen(1)
+    result[0] = value.uint8
   elif value < 1 shl 14:
-    result[1] = 2
-    result[0][0] = ((value or 128) and 255).uint8
-    result[0][1] = ((value shr 7) and 255).uint8
+    result.setLen(2)
+    result[0] = ((value or 128) and 255).uint8
+    result[1] = ((value shr 7) and 255).uint8
   elif value < 1 shl 21:
-    result[1] = 3
-    result[0][0] = ((value or 128) and 255).uint8
-    result[0][1] = (((value shr 7) or 128) and 255).uint8
-    result[0][2] = ((value shr 14) and 255).uint8
+    result.setLen(3)
+    result[0] = ((value or 128) and 255).uint8
+    result[1] = (((value shr 7) or 128) and 255).uint8
+    result[2] = ((value shr 14) and 255).uint8
   elif value < 1 shl 28:
-    result[1] = 4
-    result[0][0] = ((value or 128) and 255).uint8
-    result[0][1] = (((value shr 7) or 128) and 255).uint8
-    result[0][2] = (((value shr 14) or 128) and 255).uint8
-    result[0][3] = ((value shr 21) and 255).uint8
+    result.setLen(4)
+    result[0] = ((value or 128) and 255).uint8
+    result[1] = (((value shr 7) or 128) and 255).uint8
+    result[2] = (((value shr 14) or 128) and 255).uint8
+    result[3] = ((value shr 21) and 255).uint8
   else:
-    result[1] = 5
-    result[0][0] = ((value or 128) and 255).uint8
-    result[0][1] = (((value shr 7) or 128) and 255).uint8
-    result[0][2] = (((value shr 14) or 128) and 255).uint8
-    result[0][3] = (((value shr 21) or 128) and 255).uint8
-    result[0][4] = ((value shr 28) and 255).uint8
+    result.setLen(5)
+    result[0] = ((value or 128) and 255).uint8
+    result[1] = (((value shr 7) or 128) and 255).uint8
+    result[2] = (((value shr 14) or 128) and 255).uint8
+    result[3] = (((value shr 21) or 128) and 255).uint8
+    result[4] = ((value shr 28) and 255).uint8
 
-func varint*(buf: openarray[uint8]): (uint32, int) =
+func varint*(buf: seq[uint8]): (uint32, int) =
   if buf.len == 0:
     return
 
