@@ -30,7 +30,7 @@ template copy64*(dst: var seq[uint8], src: seq[uint8], op, ip: int) =
   else:
     cast[ptr uint64](dst[op].addr)[] = read64(src, ip)
 
-template copyRange*(
+template copyMem*(
   dst: var seq[uint8], src: seq[uint8], op, ip, len: int
 ) =
   when nimvm:

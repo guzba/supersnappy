@@ -89,7 +89,7 @@ func uncompress*(dst: var seq[uint8], src: seq[uint8]) =
         if len <= 0 or ip + len > src.len or op + len > dst.len:
           failUncompress()
 
-        copyRange(dst, src, op, ip, len)
+        copyMem(dst, src, op, ip, len)
 
       inc(ip, len)
       inc(op, len)
@@ -139,6 +139,13 @@ func uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Uncompresses src and returns the uncompressed data seq.
   uncompress(result, src)
 
+func uncompress*(src: string): string {.inline.} =
+  ## Helper for when preferring to work with strings.
+  when nimvm:
+    vmSeq2Str(uncompress(vmStr2Seq(src)))
+  else:
+    cast[string](uncompress(cast[seq[uint8]](src)))
+
 func emitLiteral(
   dst: var seq[uint8],
   src: seq[uint8],
@@ -167,7 +174,7 @@ func emitLiteral(
       inc count
     dst[base] = ((59 + count) shl 2).uint8
 
-  copyRange(dst, src, op, ip, len)
+  copyMem(dst, src, op, ip, len)
   inc(op, len)
 
 func findMatchLength(
@@ -358,13 +365,8 @@ func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Compresses src and returns the compressed data.
   compress(result, src)
 
-func uncompress*(src: string): string {.inline.} =
-  when nimvm:
-    vmSeq2Str(uncompress(vmStr2Seq(src)))
-  else:
-    cast[string](uncompress(cast[seq[uint8]](src)))
-
 func compress*(src: string): string {.inline.} =
+  ## Helper for when preferring to work with strings.
   when nimvm:
     vmSeq2Str(compress(vmStr2Seq(src)))
   else:

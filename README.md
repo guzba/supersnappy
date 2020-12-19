@@ -121,6 +121,14 @@ Uncompresses src and returns the uncompressed data seq.
 func uncompress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
 ```
 
+## **func** uncompress
+
+Helper for when preferring to work with strings.
+
+```nim
+func uncompress(src: string): string {.inline, raises: [SnappyError].}
+```
+
 ## **func** compress
 
 Compresses src into dst. This resizes dst as needed and starts writing at dst index 0.
@@ -137,15 +145,9 @@ Compresses src and returns the compressed data.
 func compress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
 ```
 
-## **func** uncompress
-
-
-```nim
-func uncompress(src: string): string {.inline, raises: [SnappyError].}
-```
-
 ## **func** compress
 
+Helper for when preferring to work with strings.
 
 ```nim
 func compress(src: string): string {.inline, raises: [SnappyError].}
