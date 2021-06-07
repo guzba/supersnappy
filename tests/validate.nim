@@ -27,7 +27,7 @@ const files = [
 block nimcompression_nimsnappyc:
   echo "https://github.com/NimCompression/nimsnappyc"
   for file in files:
-    let original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
+    let original = readFile(&"tests/data/{file}")
     doAssert nimsnappyc.snappyUncompress(
       supersnappy.compress(original)
     ) == original

@@ -11,13 +11,13 @@ for i in 0 ..< 10000:
   echo "Test ", i, " (seed ", seed, ")"
 
   var
-    data: seq[uint8]
+    data: string
     length = r.rand(100000)
     i: int
   data.setLen(length)
   while i < length:
     let
-      v = r.rand(255).uint8
+      v = r.rand(255).char
       runLength = min(r.rand(255), length - i)
     for j in 0 ..< runLength:
       data[i + j] = v
@@ -30,7 +30,7 @@ for i in 0 ..< 10000:
     try:
       let
         pos = r.rand(compressed.len - 1)
-        value = r.rand(255).uint8
+        value = r.rand(255).char
       compressed[pos] = value
       doAssert uncompress(compressed).len > 0
     except SnappyError:

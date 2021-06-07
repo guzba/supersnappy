@@ -14,75 +14,67 @@ Supersnappy works well using Nim's relatively new `--gc:arc` and `--gc:orc` as w
 
 I have also verified that Supersnappy builds with `--experimental:strictFuncs` on Nim 1.4.0.
 
+## Docs
+
+https://nimdocs.com/guzba/supersnappy/supersnappy.html
+
 ## Performance
 
 Benchmarks can be run comparing different Snappy implementations. My benchmarking shows this library performs significantly better in all cases than alternatives. Check the performance yourself by running [tests/benchmark.nim](https://github.com/guzba/supersnappy/blob/master/tests/benchmark.nim).
 
-`nim c --gc:arc -d:release -r .\tests\benchmark.nim` (1000 compress-uncompress cycles, lower time is better)
+`nim c --gc:arc -d:release -r .\tests\benchmark.nim` (100 compress-uncompress cycles, lower time is better)
 
-**https://github.com/guzba/supersnappy** results:
-
-File | Time
---- | ---:
-alice29.txt | 0.6039s
-asyoulik.txt | 0.5306s
-fireworks.jpg | 0.0213s
-geo.protodata | 0.1473s
-html | 0.1594s
-html_x_4 | 0.6427s
-kppkn.gtb | 0.4949s
-lcet10.txt | 1.6042s
-paper-100k.pdf | 0.0656s
-plrabn12.txt | 2.1893s
-urls.10K | 1.8146s
-
-https://github.com/dfdeshom/nimsnappy (Google snappy wrapper) results:
-
-File | Time
---- | ---:
-alice29.txt | 0.7470s
-asyoulik.txt | 0.6887s
-fireworks.jpg | 0.0166s
-geo.protodata | 0.1743s
-html | 0.1909s
-html_x_4 | 0.7702s
-kppkn.gtb | 0.6481s
-lcet10.txt | 1.9751s
-paper-100k.pdf | 0.0258s
-plrabn12.txt | 2.7316s
-urls.10K | 2.3412s
-
-https://github.com/NimCompression/nimsnappyc results:
-
-File | Time
---- | ---:
-alice29.txt | 0.7838s
-asyoulik.txt | 0.6805s
-fireworks.jpg | 0.0250s
-geo.protodata | 0.2246s
-html | 0.2408s
-html_x_4 | 0.9641s
-kppkn.gtb | 0.6498s
-lcet10.txt | 2.1042s
-paper-100k.pdf | 0.0879s
-plrabn12.txt | 2.6987s
-urls.10K | 2.5136s
-
-https://github.com/jangko/snappy results:
-
-File | Time
---- | ---:
-alice29.txt | 1.3289s
-asyoulik.txt | 1.1349s
-fireworks.jpg | 0.0211s
-geo.protodata | 0.4063s
-html | 0.4076s
-html_x_4 | 1.6339s
-kppkn.gtb | 1.0701s
-lcet10.txt | 3.5841s
-paper-100k.pdf | 0.0638s
-plrabn12.txt | 4.5476s
-urls.10K | 4.4155s
+```
+https://github.com/guzba/supersnappy
+name ............................... min time      avg time    std dv   runs
+alice29.txt ........................ 5.058 ms      5.080 ms    ±0.013   x983
+asyoulik.txt ....................... 4.480 ms      4.498 ms    ±0.009  x1000
+fireworks.jpg ...................... 0.167 ms      0.169 ms    ±0.003  x1000
+geo.protodata ...................... 1.013 ms      1.027 ms    ±0.008  x1000
+html ............................... 1.195 ms      1.213 ms    ±0.006  x1000
+html_x_4 ........................... 5.205 ms      5.227 ms    ±0.010   x957
+kppkn.gtb .......................... 4.149 ms      4.161 ms    ±0.008  x1000
+lcet10.txt ........................ 13.581 ms     13.605 ms    ±0.015   x368
+paper-100k.pdf ..................... 0.426 ms      0.429 ms    ±0.002  x1000
+plrabn12.txt ...................... 18.778 ms     18.807 ms    ±0.032   x266
+urls.10K .......................... 15.561 ms     15.614 ms    ±0.030   x321
+https://github.com/dfdeshom/nimsnappy
+alice29.txt ........................ 5.958 ms      5.984 ms    ±0.018   x835
+asyoulik.txt ....................... 5.298 ms      5.327 ms    ±0.019   x938
+fireworks.jpg ...................... 0.139 ms      0.141 ms    ±0.002  x1000
+geo.protodata ...................... 1.024 ms      1.037 ms    ±0.009  x1000
+html ............................... 1.188 ms      1.204 ms    ±0.011  x1000
+html_x_4 ........................... 5.569 ms      5.598 ms    ±0.019   x893
+kppkn.gtb .......................... 5.193 ms      5.213 ms    ±0.012   x959
+lcet10.txt ........................ 15.961 ms     15.996 ms    ±0.018   x313
+paper-100k.pdf ..................... 0.198 ms      0.201 ms    ±0.002  x1000
+plrabn12.txt ...................... 22.291 ms     22.355 ms    ±0.069   x224
+urls.10K .......................... 18.388 ms     18.433 ms    ±0.037   x272
+https://github.com/NimCompression/nimsnappyc
+alice29.txt ........................ 6.099 ms      6.137 ms    ±0.030   x813
+asyoulik.txt ....................... 5.182 ms      5.214 ms    ±0.015   x959
+fireworks.jpg ...................... 0.176 ms      0.178 ms    ±0.002  x1000
+geo.protodata ...................... 1.480 ms      1.529 ms    ±0.019  x1000
+html ............................... 1.715 ms      1.771 ms    ±0.018  x1000
+html_x_4 ........................... 7.073 ms      7.159 ms    ±0.031   x698
+kppkn.gtb .......................... 5.154 ms      5.194 ms    ±0.033   x961
+lcet10.txt ........................ 16.633 ms     16.661 ms    ±0.011   x301
+paper-100k.pdf ..................... 0.510 ms      0.515 ms    ±0.005  x1000
+plrabn12.txt ...................... 20.793 ms     20.868 ms    ±0.076   x240
+urls.10K .......................... 18.896 ms     18.984 ms    ±0.057   x264
+https://github.com/jangko/snappy
+alice29.txt ........................ 9.903 ms      9.947 ms    ±0.027   x502
+asyoulik.txt ....................... 8.466 ms      8.502 ms    ±0.026   x588
+fireworks.jpg ...................... 0.238 ms      0.245 ms    ±0.006  x1000
+geo.protodata ...................... 2.888 ms      2.916 ms    ±0.035  x1000
+html ............................... 2.992 ms      3.015 ms    ±0.031  x1000
+html_x_4 .......................... 12.076 ms     12.108 ms    ±0.025   x413
+kppkn.gtb .......................... 8.191 ms      8.222 ms    ±0.017   x608
+lcet10.txt ........................ 26.579 ms     26.652 ms    ±0.068   x188
+paper-100k.pdf ..................... 0.511 ms      0.529 ms    ±0.006  x1000
+plrabn12.txt ...................... 33.952 ms     34.043 ms    ±0.076   x147
+urls.10K .......................... 31.260 ms     31.366 ms    ±0.185   x160
+```
 
 ## Testing
 `nimble test`
@@ -92,65 +84,3 @@ To prevent Supersnappy from causing a crash or otherwise misbehaving on bad inpu
 ## Credits
 
 This implementation was heavily influenced by [snappy-c](https://github.com/andikleen/snappy-c).
-
-# API: supersnappy
-
-```nim
-import supersnappy
-```
-
-## **type** SnappyError
-
-Raised if an operation fails.
-
-```nim
-SnappyError = object of ValueError
-```
-
-## **func** uncompress
-
-Uncompresses src into dst. This resizes dst as needed and starts writing at dst index 0.
-
-```nim
-func uncompress(dst: var seq[uint8]; src: seq[uint8]) {.raises: [SnappyError], tags: [].}
-```
-
-## **func** uncompress
-
-Uncompresses src and returns the uncompressed data seq.
-
-```nim
-func uncompress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
-```
-
-## **func** uncompress
-
-Helper for when preferring to work with strings.
-
-```nim
-func uncompress(src: string): string {.inline, raises: [SnappyError].}
-```
-
-## **func** compress
-
-Compresses src into dst. This resizes dst as needed and starts writing at dst index 0.
-
-```nim
-func compress(dst: var seq[uint8]; src: seq[uint8]) {.raises: [SnappyError], tags: [].}
-```
-
-## **func** compress
-
-Compresses src and returns the compressed data.
-
-```nim
-func compress(src: seq[uint8]): seq[uint8] {.inline, raises: [SnappyError], tags: [].}
-```
-
-## **func** compress
-
-Helper for when preferring to work with strings.
-
-```nim
-func compress(src: string): string {.inline, raises: [SnappyError].}
-```

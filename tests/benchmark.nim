@@ -9,12 +9,12 @@ const
     "html", "html_x_4", "kppkn.gtb", "lcet10.txt", "paper-100k.pdf",
     "plrabn12.txt", "urls.10K"
   ]
-  iterations = 100
+  iterations = 10
 
 echo "https://github.com/guzba/supersnappy"
 for file in files:
   timeIt file:
-    let original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
+    let original = readFile(&"tests/data/{file}")
     for i in 0 ..< iterations:
       let
         compressed = supersnappy.compress(original)

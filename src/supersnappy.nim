@@ -59,7 +59,7 @@ template failCompress() =
     SnappyError, "Unable to compress buffer"
   )
 
-func uncompress*(dst: var seq[uint8], src: seq[uint8]) =
+func uncompress*(dst: var string, src: string) =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -69,181 +69,174 @@ func uncompress*(dst: var seq[uint8], src: seq[uint8]) =
 
   dst.setLen(uncompressedLen)
 
+  let
+    srcLen = src.len.uint
+    dstLen = dst.len.uint
   var
-    ip = bytesRead
-    op = 0
-  while ip < src.len:
-    if (src[ip] and 3) == 0: # LITERAL
-      var len = src[ip].int shr 2 + 1
+    ip = bytesRead.uint
+    op = 0.uint
+  while ip < srcLen:
+    if (src[ip].uint8 and 3) == 0: # LITERAL
+      var len = src[ip].uint shr 2 + 1
       inc ip
 
-      if len <= 16 and src.len > ip + 16 and dst.len > op + 16:
+      if len <= 16 and srcLen > ip + 16 and dstLen > op + 16:
         copy64(dst, src, op + 0, ip + 0)
         copy64(dst, src, op + 8, ip + 8)
       else:
         if len >= 61:
           let bytes = len - 60
-          len = (read32(src, ip) and lenWordMask[bytes]).int + 1
-          inc(ip, bytes)
+          len = (read32(src, ip) and lenWordMask[bytes]) + 1
+          ip += bytes
 
-        if len <= 0 or ip + len > src.len or op + len > dst.len:
+        if len <= 0 or ip + len > srcLen or op + len > dstLen:
           failUncompress()
 
         copyMem(dst, src, op, ip, len)
 
-      inc(ip, len)
-      inc(op, len)
+      ip += len
+      op += len
     else: # COPY
-      if ip + 1 >= src.len:
+      if ip + 1 >= srcLen:
         failUncompress()
 
       let
-        entry = uncompressLookup[src[ip]]
+        entry = uncompressLookup[src[ip].uint8].uint
         trailer = read32(src, ip + 1) and lenWordMask[entry shr 11]
-        len = (entry and 255).int
-        offset = (entry and 0x700).int + trailer.int
+        len = (entry and 255)
+        offset = (entry and 0x700) + trailer
 
-      inc(ip, (entry shr 11).int + 1)
+      ip += (entry shr 11) + 1
 
-      if dst.len - op < len or op.uint <= offset.uint - 1: # Catches offset == 0
+      if dstLen - op < len or op <= offset - 1: # Catches offset == 0
         failUncompress()
 
-      if len <= 16 and offset >= 8 and dst.len > op + 16:
+      if len <= 16 and offset >= 8 and dstLen > op + 16:
         copy64(dst, dst, op, op - offset)
         copy64(dst, dst, op + 8, op - offset + 8)
-        inc(op, len)
-      elif dst.len - op >= len + 10:
+        op += len
+      elif dstLen - op >= len + 10:
         var
           src = op - offset
           pos = op
-          remaining = len
+          remaining = len.int
         while pos - src < 8:
           copy64(dst, dst, pos, src)
-          dec(remaining, pos - src)
-          inc(pos, pos - src)
+          remaining -= (pos - src).int
+          pos += pos - src
         while remaining > 0:
           copy64(dst, dst, pos, src)
-          inc(src, 8)
-          inc(pos, 8)
-          dec(remaining, 8)
-        inc(op, len)
+          src += 8
+          pos += 8
+          remaining -= 8
+        op += len
       else:
         for i in op ..< op + len:
           dst[op] = dst[op - offset]
           inc op
 
-  if op != dst.len:
+  if op != dstLen:
     failUncompress()
 
-func uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
+func uncompress*(src: string): string {.inline.} =
   ## Uncompresses src and returns the uncompressed data seq.
   uncompress(result, src)
 
-func uncompress*(src: string): string {.inline.} =
-  ## Helper for when preferring to work with strings.
-  when nimvm:
-    vmSeq2Str(uncompress(vmStr2Seq(src)))
-  else:
-    cast[string](uncompress(cast[seq[uint8]](src)))
+func uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
+  cast[seq[uint8]](uncompress(cast[string](src)))
 
 func emitLiteral(
-  dst: var seq[uint8],
-  src: seq[uint8],
-  op: var int,
-  ip, len: int,
+  dst: var string,
+  src: string,
+  op: var uint,
+  ip, len: uint,
   fastPath: bool
 ) =
   var n = len - 1
   if n < 60:
-    dst[op] = n.uint8 shl 2
+    dst[op] = (n shl 2).char
     inc op
     if fastPath and len <= 16:
       copy64(dst, src, op + 0, ip + 0)
       copy64(dst, src, op + 8, ip + 8)
-      inc(op, len)
+      op += len
       return
   else:
     var
       base = op
-      count: int
+      count: uint
     inc op
     while n > 0:
-      dst[op] = (n and 255).uint8
+      dst[op] = (n and 255).char
       n = n shr 8
       inc op
       inc count
-    dst[base] = ((59 + count) shl 2).uint8
+    dst[base] = ((59 + count) shl 2).char
 
   copyMem(dst, src, op, ip, len)
-  inc(op, len)
+  op += len
 
-func findMatchLength(
-  src: seq[uint8], s1, s2, limit: int
-): int {.inline.} =
+func findMatchLength(src: string, s1, s2, limit: uint): uint {.inline.} =
   var
     s1 = s1
     s2 = s2
   while s2 <= limit - 8:
     let x = read64(src, s2) xor read64(src, s1 + result)
     if x != 0:
-      let matchingBits = countTrailingZeroBits(x)
-      inc(result, matchingBits shr 3)
+      let matchingBits = countTrailingZeroBits(x).uint
+      result += (matchingBits shr 3)
       return
-    inc(s2, 8)
-    inc(result, 8)
+    s2 += 8
+    result += 8
   while s2 < limit:
     if src[s2] != src[s1 + result]:
       return
     inc s2
     inc result
 
-func emitCopy64Max(
-  dst: var seq[uint8], op: var int, offset, len: int
-) =
+func emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
   if len < 12 and offset < 2048:
-    dst[op] = 1 + (((len - 4) shl 2) + ((offset shr 8) shl 5)).uint8
+    dst[op] = (1 + (((len - 4) shl 2) + ((offset shr 8) shl 5))).char
     inc op
-    dst[op] = (offset and 255).uint8
+    dst[op] = (offset and 255).char
     inc op
   else:
-    dst[op] = 2 + ((len - 1) shl 2).uint8
+    dst[op] = (2 + ((len - 1) shl 2)).char
     inc op
     when nimvm:
       let tmp = (offset and 0xffff).uint16
-      dst[op + 0] = ((tmp shl 0) and 255).uint8
-      dst[op + 1] = ((tmp shr 8) and 255).uint8
+      dst[op + 0] = ((tmp shl 0) and 255).char
+      dst[op + 1] = ((tmp shr 8) and 255).char
     else:
       cast[ptr uint16](dst[op].addr)[] = offset.uint16
-    inc(op, 2)
+    op += 2
 
-func emitCopy(
-  dst: var seq[uint8], op: var int, offset, len: int
-) =
+func emitCopy(dst: var string, op: var uint, offset, len: uint) =
   var len = len
   while len >= 68:
     emitCopy64Max(dst, op, offset, 64)
-    dec(len, 64)
+    len -= 64
 
   if len > 64:
     emitCopy64Max(dst, op, offset, 60)
-    dec(len, 60)
+    len -= 60
 
   emitCopy64Max(dst, op, offset, len)
 
 func compressFragment(
-  dst: var seq[uint8],
-  src: seq[uint8],
-  op: var int,
-  start: int,
-  len: int,
+  dst: var string,
+  src: string,
+  op: var uint,
+  start: uint,
+  len: uint,
   compressTable: var seq[uint16]
 ) =
   let ipEnd = start + len
   var
     ip = start
     nextEmit = ip
-    tableSize = 256
-    shift = 24
+    tableSize = 256.uint
+    shift = 24.uint
 
   while tableSize < maxCompressTableSize and tableSize < len:
     tableSize = tableSize shl 1
@@ -253,13 +246,13 @@ func compressFragment(
     for i in 0 ..< tableSize:
       compressTable[i] = 0
   else:
-    zeroMem(compressTable[0].addr, tableSize * sizeof(uint16))
+    zeroMem(compressTable[0].addr, tableSize * sizeof(uint16).uint)
 
   template hash(v: uint32): uint32 =
     (v * 0x1e35a7bd) shr shift
 
-  template uint32AtOffset(v: uint64, offset: int): uint32 =
-    ((v shr (8 * offset)) and 0xffffffff.uint32).uint32
+  template uint32AtOffset(v: uint64, shift: int): uint32 =
+    ((v shr shift) and 0xffffffff.uint32).uint32
 
   template emitRemainder() =
     if nextEmit < ipEnd:
@@ -272,9 +265,9 @@ func compressFragment(
     var nextHash = hash(read32(src, ip))
     while true:
       var
-        skipBytes = 32
+        skipBytes = 32.uint
         nextIp = ip
-        candidate: int
+        candidate: uint
       while true:
         ip = nextIp
         var
@@ -286,7 +279,7 @@ func compressFragment(
           emitRemainder()
           return
         nextHash = hash(read32(src, nextIp))
-        candidate = start + compressTable[h].int
+        candidate = start + compressTable[h]
         compressTable[h] = (ip - start).uint16
 
         if read32(src, ip) == read32(src, candidate):
@@ -301,7 +294,7 @@ func compressFragment(
         let
           matched = 4 + findMatchLength(src, candidate + 4, ip + 4, ipEnd)
           offset = ip - candidate
-        inc(ip, matched)
+        ip += matched
         emitCopy(dst, op, offset, matched)
 
         let insertTail = ip - 1
@@ -312,27 +305,27 @@ func compressFragment(
         inputBytes = read64(src, insertTail)
         let
           prevHash = hash(uint32AtOffset(inputBytes, 0))
-          curHash = hash(uint32AtOffset(inputBytes, 1))
+          curHash = hash(uint32AtOffset(inputBytes, 8))
         compressTable[prevHash] = (ip - start - 1).uint16
-        candidate = start + compressTable[curHash].int
+        candidate = start + compressTable[curHash]
         candidateBytes = read32(src, candidate)
         compressTable[curHash] = (ip - start).uint16
 
-        if uint32AtOffset(inputBytes, 1) != candidateBytes:
+        if uint32AtOffset(inputBytes, 8) != candidateBytes:
           break
 
-      nextHash = hash(uint32AtOffset(inputBytes, 2))
+      nextHash = hash(uint32AtOffset(inputBytes, 16))
       inc ip
 
   emitRemainder()
 
-func compress*(dst: var seq[uint8], src: seq[uint8]) =
+func compress*(dst: var string, src: string) =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
   when sizeof(int) > 4:
     # Ensure varint32 prefix will work.
-    if src.len > high(uint32).int:
+    if src.len > uint32.high.int:
       failCompress()
 
   dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
@@ -342,35 +335,27 @@ func compress*(dst: var seq[uint8], src: seq[uint8]) =
     dst[i] = varintBytes[i]
 
   var
-    ip = 0
-    op = varintBytes.len
-    compressTable = block:
-      when nimvm:
-        newSeq[uint16](maxCompressTableSize)
-      else:
-        newSeqUninitialized[uint16](maxCompressTableSize)
-  while ip < src.len:
+    ip = 0.uint
+    op = varintBytes.len.uint
+    compressTable = newSeq[uint16](maxCompressTableSize)
+  while ip < src.len.uint:
     let
-      fragmentSize = src.len - ip
+      fragmentSize = src.len.uint - ip
       bytesToRead = min(fragmentSize, maxBlockSize)
     if bytesToRead <= 0:
       failCompress()
 
     compressFragment(dst, src, op, ip, bytesToRead, compressTable)
-    inc(ip, bytesToRead)
+    ip += bytesToRead
 
   dst.setLen(op)
 
-func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
+func compress*(src: string): string {.inline.} =
   ## Compresses src and returns the compressed data.
   compress(result, src)
 
-func compress*(src: string): string {.inline.} =
-  ## Helper for when preferring to work with strings.
-  when nimvm:
-    vmSeq2Str(compress(vmStr2Seq(src)))
-  else:
-    cast[string](compress(cast[seq[uint8]](src)))
+func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
+  cast[seq[uint8]](compress(cast[string](src)))
 
 when defined(release):
   {.pop.}
