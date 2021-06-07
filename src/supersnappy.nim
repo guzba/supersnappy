@@ -139,10 +139,11 @@ func uncompress*(dst: var string, src: string) =
     failUncompress()
 
 func uncompress*(src: string): string {.inline.} =
-  ## Uncompresses src and returns the uncompressed data seq.
+  ## Uncompresses src and returns the uncompressed data.
   uncompress(result, src)
 
 func uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
+  ## Uncompresses src and returns the uncompressed data.
   cast[seq[uint8]](uncompress(cast[string](src)))
 
 func emitLiteral(
@@ -355,6 +356,7 @@ func compress*(src: string): string {.inline.} =
   compress(result, src)
 
 func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
+  ## Compresses src and returns the compressed data.
   cast[seq[uint8]](compress(cast[string](src)))
 
 when defined(release):
