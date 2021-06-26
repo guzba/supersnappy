@@ -59,7 +59,7 @@ template failCompress() =
     SnappyError, "Unable to compress buffer"
   )
 
-func uncompress*(dst: var string, src: string) =
+func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -320,7 +320,7 @@ func compressFragment(
 
   emitRemainder()
 
-func compress*(dst: var string, src: string) =
+func compress*(dst: var string, src: string) {.raises: [SnappyError].} =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
