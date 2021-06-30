@@ -68,35 +68,35 @@ func varint*(buf: string): (uint32, int) =
   if buf.len == 0:
     return
 
-  var b = buf[0].uint8
+  var b = cast[uint8](buf[0])
   result[0] = b and 127
   result[1] = 1
   if b < 128:
     return
   if buf.len == 1:
     return (0.uint32, 0)
-  b = buf[1].uint8
+  b = cast[uint8](buf[1])
   result[0] = result[0] or ((b and 127).uint32 shl 7)
   result[1] = 2
   if b < 128:
     return
   if buf.len == 2:
     return (0.uint32, 0)
-  b = buf[2].uint8
+  b = cast[uint8](buf[2])
   result[0] = result[0] or ((b and 127).uint32 shl 14)
   result[1] = 3
   if b < 128:
     return
   if buf.len == 3:
     return (0.uint32, 0)
-  b = buf[3].uint8
+  b = cast[uint8](buf[3])
   result[0] = result[0] or ((b and 127).uint32 shl 21)
   result[1] = 4
   if b < 128:
     return
   if buf.len == 4:
     return (0.uint32, 0)
-  b = buf[4].uint8
+  b = cast[uint8](buf[4])
   result[0] = result[0] or ((b and 127).uint32 shl 28)
   result[1] = 5
   if b < 16:

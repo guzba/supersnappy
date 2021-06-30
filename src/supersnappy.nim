@@ -76,7 +76,7 @@ func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
     ip = bytesRead.uint
     op = 0.uint
   while ip < srcLen:
-    if (src[ip].uint8 and 3) == 0: # LITERAL
+    if (cast[uint8](src[ip]) and 3) == 0: # LITERAL
       var len = src[ip].uint shr 2 + 1
       inc ip
 
@@ -101,7 +101,7 @@ func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
         failUncompress()
 
       let
-        entry = uncompressLookup[src[ip].uint8].uint
+        entry = uncompressLookup[cast[uint8](src[ip])].uint
         trailer = read32(src, ip + 1) and lenWordMask[entry shr 11]
         len = (entry and 255)
         offset = (entry and 0x700) + trailer
