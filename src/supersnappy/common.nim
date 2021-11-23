@@ -32,7 +32,7 @@ template copy64*(dst: var string, src: string, op, ip: uint) =
 
 template copyMem*(dst: var string, src: string, op, ip, len: uint) =
   when nimvm:
-    for i in 0 ..< len:
+    for i in 0.uint ..< len:
       dst[op + i] = src[ip + i]
   else:
     copyMem(dst[op].addr, src[ip].unsafeAddr, len)

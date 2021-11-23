@@ -84,7 +84,7 @@ func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
         copy64(dst, src, op + 0, ip + 0)
         copy64(dst, src, op + 8, ip + 8)
       else:
-        if len >= 61:
+        if len >= 61.uint:
           let bytes = len - 60
           len = (read32(src, ip) and lenWordMask[bytes]) + 1
           ip += bytes
@@ -111,7 +111,7 @@ func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
       if dstLen - op < len or op <= offset - 1: # Catches offset == 0
         failUncompress()
 
-      if len <= 16 and offset >= 8 and dstLen > op + 16:
+      if len <= 16 and offset >= 8.uint and dstLen > op + 16:
         copy64(dst, dst, op, op - offset)
         copy64(dst, dst, op + 8, op - offset + 8)
         op += len
@@ -167,12 +167,12 @@ func emitLiteral(
       base = op
       count: uint
     inc op
-    while n > 0:
+    while n > 0.uint:
       dst[op] = (n and 255).char
       n = n shr 8
       inc op
       inc count
-    dst[base] = ((59 + count) shl 2).char
+    dst[base] = ((59.uint + count) shl 2).char
 
   copyMem(dst, src, op, ip, len)
   op += len
@@ -197,12 +197,12 @@ func findMatchLength(src: string, s1, s2, limit: uint): uint {.inline.} =
 
 func emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
   if len < 12 and offset < 2048:
-    dst[op] = (1 + (((len - 4) shl 2) + ((offset shr 8) shl 5))).char
+    dst[op] = (1.uint + (((len - 4.uint) shl 2) + ((offset shr 8) shl 5))).char
     inc op
     dst[op] = (offset and 255).char
     inc op
   else:
-    dst[op] = (2 + ((len - 1) shl 2)).char
+    dst[op] = (2.uint + ((len - 1.uint) shl 2)).char
     inc op
     when nimvm:
       let tmp = (offset and 0xffff).uint16
@@ -214,11 +214,11 @@ func emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
 
 func emitCopy(dst: var string, op: var uint, offset, len: uint) =
   var len = len
-  while len >= 68:
+  while len >= 68.uint:
     emitCopy64Max(dst, op, offset, 64)
     len -= 64
 
-  if len > 64:
+  if len > 64.uint:
     emitCopy64Max(dst, op, offset, 60)
     len -= 60
 
@@ -259,7 +259,7 @@ func compressFragment(
     if nextEmit < ipEnd:
       emitLiteral(dst, src, op, nextEmit, ipEnd - nextEmit, false)
 
-  if len >= 15:
+  if len >= 15.uint:
     let ipLimit = start + len - 15
     inc ip
 
@@ -293,7 +293,7 @@ func compressFragment(
         candidateBytes: uint32
       while true:
         let
-          matched = 4 + findMatchLength(src, candidate + 4, ip + 4, ipEnd)
+          matched = 4.uint + findMatchLength(src, candidate + 4, ip + 4, ipEnd)
           offset = ip - candidate
         ip += matched
         emitCopy(dst, op, offset, matched)
