@@ -2,7 +2,7 @@
 # See the snappy-c repo at https://github.com/andikleen/snappy-c for
 # extensive comments explaining the implementation.
 
-import bitops, supersnappy/common
+import bitops, supersnappy/internal
 
 const
   uncompressLookup = [
