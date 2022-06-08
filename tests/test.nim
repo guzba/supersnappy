@@ -1,4 +1,4 @@
-import strformat, supersnappy, supersnappy/common
+import strformat, supersnappy, supersnappy/internal
 
 block varint:
   doAssert varint(0) == "\0"

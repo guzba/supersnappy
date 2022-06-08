@@ -1,36 +1,39 @@
 when defined(release):
   {.push checks: off.}
 
-template read32*(s: string, pos: uint): uint32 =
+proc read32*(src: string, ip: uint): uint32 {.inline.} =
   when nimvm:
-    (s[pos + 0].uint32 shl 0) or
-    (s[pos + 1].uint32 shl 8) or
-    (s[pos + 2].uint32 shl 16) or
-    (s[pos + 3].uint32 shl 24)
+    result =
+      (src[ip + 0].uint32 shl 0) or
+      (src[ip + 1].uint32 shl 8) or
+      (src[ip + 2].uint32 shl 16) or
+      (src[ip + 3].uint32 shl 24)
   else:
-    cast[ptr uint32](s[pos].unsafeAddr)[]
+    copyMem(result.addr, src[ip].unsafeAddr, 4)
 
-template read64*(s: string, pos: uint): uint64 =
+proc read64*(src: string, ip: uint): uint64 {.inline.} =
   when nimvm:
-    (s[pos + 0].uint64 shl 0) or
-    (s[pos + 1].uint64 shl 8) or
-    (s[pos + 2].uint64 shl 16) or
-    (s[pos + 3].uint64 shl 24) or
-    (s[pos + 4].uint64 shl 32) or
-    (s[pos + 5].uint64 shl 40) or
-    (s[pos + 6].uint64 shl 48) or
-    (s[pos + 7].uint64 shl 56)
+    result =
+      (src[ip + 0].uint64 shl 0) or
+      (src[ip + 1].uint64 shl 8) or
+      (src[ip + 2].uint64 shl 16) or
+      (src[ip + 3].uint64 shl 24) or
+      (src[ip + 4].uint64 shl 32) or
+      (src[ip + 5].uint64 shl 40) or
+      (src[ip + 6].uint64 shl 48) or
+      (src[ip + 7].uint64 shl 56)
   else:
-    cast[ptr uint64](s[pos].unsafeAddr)[]
+    copyMem(result.addr, src[ip].unsafeAddr, 8)
 
-template copy64*(dst: var string, src: string, op, ip: uint) =
+proc copy64*(dst: var string, src: string, op, ip: uint) {.inline.} =
   when nimvm:
     for i in 0.uint .. 7:
       dst[op + i] = src[ip + i]
   else:
-    cast[ptr uint64](dst[op].addr)[] = read64(src, ip)
+    var v = read64(src, ip)
+    copyMem(dst[op].addr, v.addr, 8)
 
-template copyMem*(dst: var string, src: string, op, ip, len: uint) =
+proc copyMem*(dst: var string, src: string, op, ip, len: uint) {.inline.} =
   when nimvm:
     for i in 0.uint ..< len:
       dst[op + i] = src[ip + i]
