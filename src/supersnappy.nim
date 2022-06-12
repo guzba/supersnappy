@@ -209,7 +209,8 @@ func emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
       dst[op + 0] = ((tmp shl 0) and 255).char
       dst[op + 1] = ((tmp shr 8) and 255).char
     else:
-      cast[ptr uint16](dst[op].addr)[] = offset.uint16
+      var offset = offset.uint16
+      copyMem(dst[op].addr, offset.addr, 2)
     op += 2
 
 func emitCopy(dst: var string, op: var uint, offset, len: uint) =
