@@ -9,45 +9,36 @@ const
     "html", "html_x_4", "kppkn.gtb", "lcet10.txt", "paper-100k.pdf",
     "plrabn12.txt", "urls.10K"
   ]
-  iterations = 10
 
 echo "https://github.com/guzba/supersnappy"
 for file in files:
+  let original = readFile(&"tests/data/{file}")
   timeIt file:
-    let original = readFile(&"tests/data/{file}")
-    for i in 0 ..< iterations:
-      let
-        compressed = supersnappy.compress(original)
-        uncompressed = supersnappy.uncompress(compressed)
-      keep(uncompressed)
+    let
+      compressed = supersnappy.compress(original)
+      uncompressed = supersnappy.uncompress(compressed)
 
 import nimsnappy # Requires libsnappy.dll
 echo "https://github.com/dfdeshom/nimsnappy"
 for file in files:
+  let original = readFile(&"tests/data/{file}")
   timeIt file:
-    let original = readFile(&"tests/data/{file}")
-    for i in 0 ..< iterations:
-      let
-        compressed = nimsnappy.compress(original)
-        uncompressed = nimsnappy.uncompress(compressed)
-      keep(uncompressed)
+    let
+      compressed = nimsnappy.compress(original)
+      uncompressed = nimsnappy.uncompress(compressed)
 
 echo "https://github.com/NimCompression/nimsnappyc"
 for file in files:
+  let original = readFile(&"tests/data/{file}")
   timeIt file:
-    let original = readFile(&"tests/data/{file}")
-    for i in 0 ..< iterations:
-      let
-        compressed = nimsnappyc.snappyCompress(original)
-        uncompressed = nimsnappyc.snappyUncompress(compressed)
-      keep(uncompressed)
+    let
+      compressed = nimsnappyc.snappyCompress(original)
+      uncompressed = nimsnappyc.snappyUncompress(compressed)
 
-echo "https://github.com/jangko/snappy"
+echo "https://github.com/status-im/nim-snappy"
 for file in files:
+  let original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
   timeIt file:
-    let original = cast[seq[uint8]](readFile(&"tests/data/{file}"))
-    for i in 0 ..< iterations:
-      let
-        compressed = snappy.encode(original)
-        uncompressed = snappy.decode(compressed)
-      keep(uncompressed)
+    let
+      compressed = snappy.encode(original)
+      uncompressed = snappy.decode(compressed)
