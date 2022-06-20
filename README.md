@@ -1,8 +1,12 @@
 # Supersnappy
 
-![Github Actions](https://github.com/guzba/supersnappy/workflows/Github%20Actions/badge.svg)
-
 `nimble install supersnappy`
+
+![Github Actions](https://github.com//supersnappy/workflows/Github%20Actions/badge.svg)
+
+[API reference](https://nimdocs.com//supersnappy)
+
+This library has no dependencies other than the Nim standard library.
 
 Supersnappy is a pure Nim implementation of [Google's Snappy](https://github.com/google/snappy) compression algorithm. The goal of this library is to be small, straightforward, dependency-free and highly performant.
 
@@ -13,10 +17,6 @@ To ensure Supersnappy is compatible with other Snappy implementations, `tests/va
 Supersnappy works well using Nim's relatively new `--gc:arc` and `--gc:orc` as well as the default garbage collector. This library also works using both `nim c` and `nim cpp`, in addition to `--cc:vcc` on Windows.
 
 I have also verified that Supersnappy builds with `--experimental:strictFuncs` on Nim 1.4.0.
-
-## Docs
-
-https://nimdocs.com/guzba/supersnappy/supersnappy.html
 
 ## Performance
 
