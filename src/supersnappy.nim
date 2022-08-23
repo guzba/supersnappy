@@ -44,7 +44,7 @@ const
   maxCompressTableSize = 1 shl 14
 
 type
-  SnappyError* = object of ValueError ## Raised if an operation fails.
+  SnappyError* = object of CatchableError ## Raised if an operation fails.
 
 when defined(release):
   {.push checks: off.}
