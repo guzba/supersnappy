@@ -1,0 +1,7 @@
+SnappyError	supersnappy.html#SnappyError	supersnappy: SnappyError	
+uncompress	supersnappy.html#uncompress,string,string	supersnappy: uncompress(dst: var string; src: string)	
+uncompress	supersnappy.html#uncompress,string	supersnappy: uncompress(src: string): string	
+uncompress	supersnappy.html#uncompress,seq[uint8]	supersnappy: uncompress(src: seq[uint8]): seq[uint8]	
+compress	supersnappy.html#compress,string,string	supersnappy: compress(dst: var string; src: string)	
+compress	supersnappy.html#compress,string	supersnappy: compress(src: string): string	
+compress	supersnappy.html#compress,seq[uint8]	supersnappy: compress(src: seq[uint8]): seq[uint8]	
