@@ -1,7 +1,10 @@
-SnappyError	supersnappy.html#SnappyError	supersnappy: SnappyError	
-uncompress	supersnappy.html#uncompress,string,string	supersnappy: uncompress(dst: var string; src: string)	
-uncompress	supersnappy.html#uncompress,string	supersnappy: uncompress(src: string): string	
-uncompress	supersnappy.html#uncompress,seq[uint8]	supersnappy: uncompress(src: seq[uint8]): seq[uint8]	
-compress	supersnappy.html#compress,string,string	supersnappy: compress(dst: var string; src: string)	
-compress	supersnappy.html#compress,string	supersnappy: compress(src: string): string	
-compress	supersnappy.html#compress,seq[uint8]	supersnappy: compress(src: seq[uint8]): seq[uint8]	
+nimTitle	supersnappy	supersnappy.html	module src/supersnappy		0
+nim	SnappyError	supersnappy.html#SnappyError	object SnappyError		47
+nim	uncompress	supersnappy.html#uncompress,string,string	proc uncompress(dst: var string; src: string)		62
+nim	uncompress	supersnappy.html#uncompress,string	proc uncompress(src: string): string		141
+nim	uncompress	supersnappy.html#uncompress,seq[uint8]	proc uncompress(src: seq[uint8]): seq[uint8]		145
+nim	compress	supersnappy.html#compress,string,string	proc compress(dst: var string; src: string)		324
+nim	compress	supersnappy.html#compress,string	proc compress(src: string): string		355
+nim	compress	supersnappy.html#compress,seq[uint8]	proc compress(src: seq[uint8]): seq[uint8]		359
+nimgrp	compress	supersnappy.html#compress-procs-all	proc		324
+nimgrp	uncompress	supersnappy.html#uncompress-procs-all	proc		62

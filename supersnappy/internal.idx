@@ -1,6 +1,8 @@
-read32	supersnappy/internal.html#read32,string,uint	internal: read32(src: string; ip: uint): uint32	
-read64	supersnappy/internal.html#read64,string,uint	internal: read64(src: string; ip: uint): uint64	
-copy64	supersnappy/internal.html#copy64,string,string,uint,uint	internal: copy64(dst: var string; src: string; op, ip: uint)	
-copyMem	supersnappy/internal.html#copyMem,string,string,uint,uint,uint	internal: copyMem(dst: var string; src: string; op, ip, len: uint)	
-varint	supersnappy/internal.html#varint,uint32	internal: varint(value: uint32): string	
-varint	supersnappy/internal.html#varint,string	internal: varint(buf: string): (uint32, int)	
+nimTitle	internal	supersnappy/internal.html	module src/supersnappy/internal		0
+nim	read32	supersnappy/internal.html#read32,string,uint	proc read32(src: string; ip: uint): uint32		4
+nim	read64	supersnappy/internal.html#read64,string,uint	proc read64(src: string; ip: uint): uint64		14
+nim	copy64	supersnappy/internal.html#copy64,string,string,uint,uint	proc copy64(dst: var string; src: string; op, ip: uint)		28
+nim	copyMem	supersnappy/internal.html#copyMem,string,string,uint,uint,uint	proc copyMem(dst: var string; src: string; op, ip, len: uint)		36
+nim	varint	supersnappy/internal.html#varint,uint32	proc varint(value: uint32): string		43
+nim	varint	supersnappy/internal.html#varint,string	proc varint(buf: string): (uint32, int)		70
+nimgrp	varint	supersnappy/internal.html#varint-procs-all	proc		43
