@@ -12,3 +12,6 @@ nimcache
 *.dll
 .*
 dump.txt
+tmp/
+*.dSYM/
+emscripten/
