@@ -1,4 +1,4 @@
-version       = "2.1.3"
+version       = "2.1.4"
 author        = "Ryan Oldenburg"
 description   = "Nim implementation of Google's Snappy compression."
 license       = "MIT"
