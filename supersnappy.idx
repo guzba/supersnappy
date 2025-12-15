@@ -6,5 +6,5 @@ nim	uncompress	supersnappy.html#uncompress,seq[uint8]	proc uncompress(src: seq[u
 nim	compress	supersnappy.html#compress,string,string	proc compress(dst: var string; src: string)		324
 nim	compress	supersnappy.html#compress,string	proc compress(src: string): string		355
 nim	compress	supersnappy.html#compress,seq[uint8]	proc compress(src: seq[uint8]): seq[uint8]		359
-nimgrp	compress	supersnappy.html#compress-procs-all	proc		324
 nimgrp	uncompress	supersnappy.html#uncompress-procs-all	proc		62
+nimgrp	compress	supersnappy.html#compress-procs-all	proc		324
