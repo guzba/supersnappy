@@ -10,3 +10,5 @@
 *.js
 nimcache
 *.dll
+.*
+dump.txt
