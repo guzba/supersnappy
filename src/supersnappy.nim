@@ -43,8 +43,7 @@ const
   maxBlockSize = 1 shl 16
   maxCompressTableSize = 1 shl 14
 
-type
-  SnappyError* = object of CatchableError ## Raised if an operation fails.
+type SnappyError* = object of CatchableError
 
 when defined(release):
   {.push checks: off.}
@@ -66,6 +65,10 @@ func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
   let (uncompressedLen, bytesRead) = varint(src)
   if bytesRead <= 0:
     failUncompress()
+
+  when sizeof(int) == 4:
+    if uncompressedLen > int.high.uint32:
+      raise newException(SnappyError, "Uncompressed size exceeds max string len")
 
   dst.setLen(uncompressedLen)
 
