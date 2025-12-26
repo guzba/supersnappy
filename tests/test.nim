@@ -1,23 +1,46 @@
 import strformat, supersnappy, supersnappy/internal
 
-block varint:
-  doAssert varint(0) == "\0"
-  doAssert varint(64) == &"{0x40.char}"
-  doAssert varint(2097150) == &"{0xFE.char}{0xFF.char}{0x7F.char}"
-  doAssert varint(uint32.high) ==
-    &"{0xFF.char}{0xFF.char}{0xFF.char}{0xFF.char}{0x0F.char}"
-  doAssert varint(0xFF.uint8) == &"{0xFF.char}{0x01.char}"
+block:
+  var dst: string
+  dst.addVarint(0)
+  doAssert dst == "\0"
+  doAssert varint(dst.toOpenArrayByte(0, dst.high)) == (0.uint32, 1)
 
-  doAssert varint(varint(0)) == (0.uint32, 1)
-  doAssert varint(varint(64)) == (64.uint32, 1)
-  doAssert varint(varint(2097150)) == (2097150.uint32, 3)
-  doAssert varint(varint(uint32.high)) == (uint32.high, 5)
-  doAssert varint(varint(0xFF.uint8)) == (255.uint32, 2)
+block:
+  var dst: string
+  dst.addVarint(64)
+  doAssert dst == &"{0x40.char}"
+  doAssert varint(dst.toOpenArrayByte(0, dst.high)) == (64.uint32, 1)
 
-  doAssert varint(&"{0xFF.char}{0xFF.char}{0xFF.char}{0xFF.char}{0xFF.char}") ==
-    (0.uint32, 0) # Overflows
-  doAssert varint(&"{0xFF.char}") == (0.uint32, 0) # Invalid encoding
-  doAssert varint("") == (0.uint32, 0) # Invalid encoding
+block:
+  var dst: string
+  dst.addVarint(2097150)
+  doAssert dst == &"{0xFE.char}{0xFF.char}{0x7F.char}"
+  doAssert varint(dst.toOpenArrayByte(0, dst.high)) == (2097150.uint32, 3)
+
+block:
+  var dst: string
+  dst.addVarint(uint32.high)
+  doAssert dst == &"{0xFF.char}{0xFF.char}{0xFF.char}{0xFF.char}{0x0F.char}"
+  doAssert varint(dst.toOpenArrayByte(0, dst.high)) == (uint32.high, 5)
+
+block:
+  var dst: string
+  dst.addVarint(0xFF.uint8)
+  doAssert dst == &"{0xFF.char}{0x01.char}"
+  doAssert varint(dst.toOpenArrayByte(0, dst.high)) == (255.uint32, 2)
+
+block:
+  let src = &"{0xFF.char}{0xFF.char}{0xFF.char}{0xFF.char}{0xFF.char}"
+  doAssert varint(src.toOpenArrayByte(0, src.high)) == (0.uint32, 0) # Overflows
+
+block:
+  let src = &"{0xFF.char}"
+  doAssert varint(src.toOpenArrayByte(0, src.high)) == (0.uint32, 0) # Invalid encoding
+
+block:
+  let src = ""
+  doAssert varint(src.toOpenArrayByte(0, src.high)) == (0.uint32, 0) # Invalid encoding
 
 block baddata:
   for i in 1 .. 3:

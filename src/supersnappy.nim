@@ -62,7 +62,7 @@ proc uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
-  let (uncompressedLen, bytesRead) = varint(src)
+  let (uncompressedLen, bytesRead) = varint(src.toOpenArrayByte(0, src.high))
   if bytesRead <= 0:
     failUncompress()
 
@@ -333,16 +333,16 @@ proc compress*(dst: var string, src: string) {.raises: [SnappyError].} =
     if src.len > uint32.high.int:
       failCompress()
 
-  dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
-
-  let varintBytes = varint(src.len.uint32)
-  for i in 0 ..< varintBytes.len:
-    dst[i] = varintBytes[i]
+  dst.setLen(0)
+  dst.addVarint(src.len.uint32)
 
   var
     ip = 0.uint
-    op = varintBytes.len.uint
+    op = dst.len.uint
     compressTable = newSeq[uint16](maxCompressTableSize)
+
+  dst.setLen(32 + src.len + (src.len div 6)) # Worst-case compressed length
+
   while ip < src.len.uint:
     let
       fragmentSize = src.len.uint - ip
