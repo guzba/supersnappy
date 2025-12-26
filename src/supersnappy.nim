@@ -58,7 +58,7 @@ template failCompress() =
     SnappyError, "Unable to compress buffer"
   )
 
-func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
+proc uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -141,15 +141,15 @@ func uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
   if op != dstLen:
     failUncompress()
 
-func uncompress*(src: string): string {.inline.} =
+proc uncompress*(src: string): string {.inline.} =
   ## Uncompresses src and returns the uncompressed data.
   uncompress(result, src)
 
-func uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
+proc uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Uncompresses src and returns the uncompressed data.
   cast[seq[uint8]](uncompress(cast[string](src)))
 
-func emitLiteral(
+proc emitLiteral(
   dst: var string,
   src: string,
   op: var uint,
@@ -180,7 +180,7 @@ func emitLiteral(
   copyMem(dst, src, op, ip, len)
   op += len
 
-func findMatchLength(src: string, s1, s2, limit: uint): uint {.inline.} =
+proc findMatchLength(src: string, s1, s2, limit: uint): uint {.inline.} =
   var
     s1 = s1
     s2 = s2
@@ -198,7 +198,7 @@ func findMatchLength(src: string, s1, s2, limit: uint): uint {.inline.} =
     inc s2
     inc result
 
-func emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
+proc emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
   if len < 12 and offset < 2048:
     dst[op] = (1.uint + (((len - 4.uint) shl 2) + ((offset shr 8) shl 5))).char
     inc op
@@ -216,7 +216,7 @@ func emitCopy64Max(dst: var string, op: var uint, offset, len: uint) =
       copyMem(dst[op].addr, offset.addr, 2)
     op += 2
 
-func emitCopy(dst: var string, op: var uint, offset, len: uint) =
+proc emitCopy(dst: var string, op: var uint, offset, len: uint) =
   var len = len
   while len >= 68.uint:
     emitCopy64Max(dst, op, offset, 64)
@@ -228,7 +228,7 @@ func emitCopy(dst: var string, op: var uint, offset, len: uint) =
 
   emitCopy64Max(dst, op, offset, len)
 
-func compressFragment(
+proc compressFragment(
   dst: var string,
   src: string,
   op: var uint,
@@ -324,7 +324,7 @@ func compressFragment(
 
   emitRemainder()
 
-func compress*(dst: var string, src: string) {.raises: [SnappyError].} =
+proc compress*(dst: var string, src: string) {.raises: [SnappyError].} =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -355,11 +355,11 @@ func compress*(dst: var string, src: string) {.raises: [SnappyError].} =
 
   dst.setLen(op)
 
-func compress*(src: string): string {.inline.} =
+proc compress*(src: string): string {.inline.} =
   ## Compresses src and returns the compressed data.
   compress(result, src)
 
-func compress*(src: seq[uint8]): seq[uint8] {.inline.} =
+proc compress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Compresses src and returns the compressed data.
   cast[seq[uint8]](compress(cast[string](src)))
 
