@@ -1,7 +1,18 @@
 when defined(release):
   {.push checks: off.}
 
-proc read32*(src: openarray[uint8], ip: uint): uint32 {.inline.} =
+when defined(release) and defined(nimHasQuirky):
+  proc read32*(src: openarray[uint8], ip: uint): uint32 {.inline, quirky.}
+  proc read64*(src: openarray[uint8], ip: uint): uint64 {.inline, quirky.}
+  proc copy64*(dst: var string, src: openarray[uint8], op, ip: uint) {.inline, quirky.}
+  proc copyMem*(dst: var string, src: openarray[uint8], op, ip, len: uint) {.inline, quirky.}
+else:
+  proc read32*(src: openarray[uint8], ip: uint): uint32 {.inline.}
+  proc read64*(src: openarray[uint8], ip: uint): uint64 {.inline.}
+  proc copy64*(dst: var string, src: openarray[uint8], op, ip: uint) {.inline.}
+  proc copyMem*(dst: var string, src: openarray[uint8], op, ip, len: uint) {.inline.}
+
+proc read32*(src: openarray[uint8], ip: uint): uint32 =
   when nimvm:
     result =
       (src[ip + 0].uint32 shl 0) or
@@ -11,7 +22,7 @@ proc read32*(src: openarray[uint8], ip: uint): uint32 {.inline.} =
   else:
     copyMem(result.addr, src[ip].unsafeAddr, 4)
 
-proc read64*(src: openarray[uint8], ip: uint): uint64 {.inline.} =
+proc read64*(src: openarray[uint8], ip: uint): uint64 =
   when nimvm:
     result =
       (src[ip + 0].uint64 shl 0) or
@@ -25,7 +36,7 @@ proc read64*(src: openarray[uint8], ip: uint): uint64 {.inline.} =
   else:
     copyMem(result.addr, src[ip].unsafeAddr, 8)
 
-proc copy64*(dst: var string, src: openarray[uint8], op, ip: uint) {.inline.} =
+proc copy64*(dst: var string, src: openarray[uint8], op, ip: uint) =
   when nimvm:
     for i in 0.uint .. 7:
       dst[op + i] = src[ip + i].char
@@ -33,7 +44,7 @@ proc copy64*(dst: var string, src: openarray[uint8], op, ip: uint) {.inline.} =
     var v = read64(src, ip)
     copyMem(dst[op].addr, v.addr, 8)
 
-proc copyMem*(dst: var string, src: openarray[uint8], op, ip, len: uint) {.inline.} =
+proc copyMem*(dst: var string, src: openarray[uint8], op, ip, len: uint) =
   when nimvm:
     for i in 0.uint ..< len:
       dst[op + i] = src[ip + i].char
