@@ -72,18 +72,15 @@ proc uncompress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError]
 
   dst.setLen(uncompressedLen)
 
-  let
-    srcLen = src.len.uint
-    dstLen = dst.len.uint
   var
     ip = bytesRead.uint
     op = 0.uint
-  while ip < srcLen:
+  while ip < src.len.uint:
     if (cast[uint8](src[ip]) and 3) == 0: # LITERAL
       var len = src[ip].uint shr 2 + 1
       inc ip
 
-      if len <= 16 and srcLen > ip + 16 and dstLen > op + 16:
+      if len <= 16 and src.len.uint > ip + 16 and dst.len.uint > op + 16:
         copy64(dst, src, op + 0, ip + 0)
         copy64(dst, src, op + 8, ip + 8)
       else:
@@ -92,7 +89,7 @@ proc uncompress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError]
           len = (read32(src, ip) and lenWordMask[bytes]) + 1
           ip += bytes
 
-        if len <= 0 or ip + len > srcLen or op + len > dstLen:
+        if len <= 0 or ip + len > src.len.uint or op + len > dst.len.uint:
           failUncompress()
 
         copyMem(dst, src, op, ip, len)
@@ -100,7 +97,7 @@ proc uncompress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError]
       ip += len
       op += len
     else: # COPY
-      if ip + 1 >= srcLen:
+      if ip + 1 >= src.len.uint:
         failUncompress()
 
       let
@@ -111,14 +108,14 @@ proc uncompress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError]
 
       ip += (entry shr 11) + 1
 
-      if dstLen - op < len or op <= offset - 1: # Catches offset == 0
+      if dst.len.uint - op < len or op <= offset - 1: # Catches offset == 0
         failUncompress()
 
-      if len <= 16 and offset >= 8.uint and dstLen > op + 16:
+      if len <= 16 and offset >= 8.uint and dst.len.uint > op + 16:
         copy64(dst, dst.toOpenArrayByte(0, dst.high), op, op - offset)
         copy64(dst, dst.toOpenArrayByte(0, dst.high), op + 8, op - offset + 8)
         op += len
-      elif dstLen - op >= len + 10:
+      elif dst.len.uint - op >= len + 10:
         var
           src = op - offset
           pos = op
@@ -138,7 +135,7 @@ proc uncompress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError]
           dst[op] = dst[op - offset]
           inc op
 
-  if op != dstLen:
+  if op != dst.len.uint:
     failUncompress()
 
 proc uncompress*(dst: var string, src: string) {.inline.} =
