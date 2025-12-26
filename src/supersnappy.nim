@@ -58,11 +58,11 @@ template failCompress() =
     SnappyError, "Unable to compress buffer"
   )
 
-proc uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
+proc uncompress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError].} =
   ## Uncompresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
-  let (uncompressedLen, bytesRead) = varint(src.toOpenArrayByte(0, src.high))
+  let (uncompressedLen, bytesRead) = varint(src)
   if bytesRead <= 0:
     failUncompress()
 
@@ -115,8 +115,8 @@ proc uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
         failUncompress()
 
       if len <= 16 and offset >= 8.uint and dstLen > op + 16:
-        copy64(dst, dst, op, op - offset)
-        copy64(dst, dst, op + 8, op - offset + 8)
+        copy64(dst, dst.toOpenArrayByte(0, dst.high), op, op - offset)
+        copy64(dst, dst.toOpenArrayByte(0, dst.high), op + 8, op - offset + 8)
         op += len
       elif dstLen - op >= len + 10:
         var
@@ -124,11 +124,11 @@ proc uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
           pos = op
           remaining = len.int
         while pos - src < 8:
-          copy64(dst, dst, pos, src)
+          copy64(dst, dst.toOpenArrayByte(0, dst.high), pos, src)
           remaining -= (pos - src).int
           pos += pos - src
         while remaining > 0:
-          copy64(dst, dst, pos, src)
+          copy64(dst, dst.toOpenArrayByte(0, dst.high), pos, src)
           src += 8
           pos += 8
           remaining -= 8
@@ -141,17 +141,22 @@ proc uncompress*(dst: var string, src: string) {.raises: [SnappyError].} =
   if op != dstLen:
     failUncompress()
 
+proc uncompress*(dst: var string, src: string) {.inline.} =
+  ## Uncompresses src into dst. This resizes dst as needed and starts writing
+  ## at dst index 0.
+  uncompress(dst, src.toOpenArrayByte(0, src.high))
+
 proc uncompress*(src: string): string {.inline.} =
   ## Uncompresses src and returns the uncompressed data.
-  uncompress(result, src)
+  uncompress(result, src.toOpenArrayByte(0, src.high))
 
 proc uncompress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Uncompresses src and returns the uncompressed data.
-  cast[seq[uint8]](uncompress(cast[string](src)))
+  cast[seq[uint8]](uncompress(src))
 
 proc emitLiteral(
   dst: var string,
-  src: string,
+  src: openarray[uint8],
   op: var uint,
   ip, len: uint,
   fastPath: bool
@@ -180,7 +185,7 @@ proc emitLiteral(
   copyMem(dst, src, op, ip, len)
   op += len
 
-proc findMatchLength(src: string, s1, s2, limit: uint): uint {.inline.} =
+proc findMatchLength(src: openarray[uint8], s1, s2, limit: uint): uint {.inline.} =
   var
     s1 = s1
     s2 = s2
@@ -230,7 +235,7 @@ proc emitCopy(dst: var string, op: var uint, offset, len: uint) =
 
 proc compressFragment(
   dst: var string,
-  src: string,
+  src: openarray[uint8],
   op: var uint,
   start: uint,
   len: uint,
@@ -324,7 +329,7 @@ proc compressFragment(
 
   emitRemainder()
 
-proc compress*(dst: var string, src: string) {.raises: [SnappyError].} =
+proc compress*(dst: var string, src: openarray[uint8]) {.raises: [SnappyError].} =
   ## Compresses src into dst. This resizes dst as needed and starts writing
   ## at dst index 0.
 
@@ -355,13 +360,18 @@ proc compress*(dst: var string, src: string) {.raises: [SnappyError].} =
 
   dst.setLen(op)
 
+proc compress*(dst: var string, src: string) {.inline.} =
+  ## Compresses src into dst. This resizes dst as needed and starts writing
+  ## at dst index 0.
+  compress(dst, src.toOpenArrayByte(0, src.high))
+
 proc compress*(src: string): string {.inline.} =
   ## Compresses src and returns the compressed data.
-  compress(result, src)
+  compress(result, src.toOpenArrayByte(0, src.high))
 
 proc compress*(src: seq[uint8]): seq[uint8] {.inline.} =
   ## Compresses src and returns the compressed data.
-  cast[seq[uint8]](compress(cast[string](src)))
+  cast[seq[uint8]](compress(src))
 
 when defined(release):
   {.pop.}

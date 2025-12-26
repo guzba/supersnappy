@@ -1,7 +1,7 @@
 when defined(release):
   {.push checks: off.}
 
-proc read32*(src: string, ip: uint): uint32 {.inline.} =
+proc read32*(src: openarray[uint8], ip: uint): uint32 {.inline.} =
   when nimvm:
     result =
       (src[ip + 0].uint32 shl 0) or
@@ -11,7 +11,7 @@ proc read32*(src: string, ip: uint): uint32 {.inline.} =
   else:
     copyMem(result.addr, src[ip].unsafeAddr, 4)
 
-proc read64*(src: string, ip: uint): uint64 {.inline.} =
+proc read64*(src: openarray[uint8], ip: uint): uint64 {.inline.} =
   when nimvm:
     result =
       (src[ip + 0].uint64 shl 0) or
@@ -25,18 +25,18 @@ proc read64*(src: string, ip: uint): uint64 {.inline.} =
   else:
     copyMem(result.addr, src[ip].unsafeAddr, 8)
 
-proc copy64*(dst: var string, src: string, op, ip: uint) {.inline.} =
+proc copy64*(dst: var string, src: openarray[uint8], op, ip: uint) {.inline.} =
   when nimvm:
     for i in 0.uint .. 7:
-      dst[op + i] = src[ip + i]
+      dst[op + i] = src[ip + i].char
   else:
     var v = read64(src, ip)
     copyMem(dst[op].addr, v.addr, 8)
 
-proc copyMem*(dst: var string, src: string, op, ip, len: uint) {.inline.} =
+proc copyMem*(dst: var string, src: openarray[uint8], op, ip, len: uint) {.inline.} =
   when nimvm:
     for i in 0.uint ..< len:
-      dst[op + i] = src[ip + i]
+      dst[op + i] = src[ip + i].char
   else:
     copyMem(dst[op].addr, src[ip].unsafeAddr, len)
 
